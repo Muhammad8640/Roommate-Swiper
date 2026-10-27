@@ -1,0 +1,33 @@
+{
+  "name": "roommate-swiper-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node --env-file=.env src/server.js",
+    "dev": "node --env-file=.env --watch src/server.js",
+    "migrate": "node --env-file=.env scripts/migrate.js",
+    "school:add": "node --env-file=.env scripts/school.js",
+    "demo": "node scripts/demo.js",
+    "demo:check": "node scripts/check-demo.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js",
+    "api:check": "node scripts/check-api.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.0",
+    "helmet": "^8.0.0",
+    "multer": "^2.5.0",
+    "pg": "^8.16.0",
+    "sharp": "^0.35.5",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "^12.0.0",
+    "@electric-sql/pglite": "^0.3.0",
+    "supertest": "^7.1.0"
+  }
+}

@@ -1,0 +1,266 @@
+openapi: 3.0.3
+info:
+  title: Roommate Swiper - Accounts and Profiles
+  version: 0.1.0
+  description: |
+    Fresh backend, feature milestone 1. Registration, confirmation, login, logout,
+    recovery and session refresh use Supabase Auth directly. Application data and
+    file operations use this API. Every protected operation requires an active
+    account with a current confirmed email from an enabled supported school.
+    Only current-feature routes are defined; later milestones return 404.
+servers:
+  - url: http://127.0.0.1:3000/api/v1
+    description: Local API with real Supabase integration
+  - url: http://127.0.0.1:3001/api/v1
+    description: Offline demo with simulated Auth and Storage
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: Process liveness, not database or Auth readiness
+      security: []
+      responses:
+        '200':
+          description: Running
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [status]
+                    properties:
+                      status: {type: string, enum: [ok]}
+        default: {$ref: '#/components/responses/Error'}
+  /schools:
+    get:
+      operationId: listSchools
+      summary: Enabled schools and exact accepted domains; empty until configured
+      security: []
+      responses:
+        '200':
+          description: Supported schools
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - {$ref: '#/components/schemas/School'}
+                        - type: object
+                          required: [domains]
+                          properties:
+                            domains: {type: array, items: {type: string}}
+        default: {$ref: '#/components/responses/Error'}
+  /me:
+    get:
+      operationId: getAccount
+      summary: Verify identity, idempotently bootstrap account, return profile completion
+      responses:
+        '200':
+          description: Current account; no contact details or auth metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    additionalProperties: false
+                    required: [id, status, school, onboarding]
+                    properties:
+                      id: {type: string, format: uuid}
+                      status: {type: string, enum: [active]}
+                      school: {$ref: '#/components/schemas/School'}
+                      onboarding:
+                        type: object
+                        additionalProperties: false
+                        required: [complete, missingFields]
+                        properties:
+                          complete: {type: boolean, description: Profile exists and at least one photo is saved}
+                          missingFields:
+                            type: array
+                            items: {type: string, enum: [profile, photo]}
+              example:
+                data:
+                  id: 11111111-1111-4111-8111-111111111111
+                  status: active
+                  school: {id: 33333333-3333-4333-8333-333333333333, name: Demo University}
+                  onboarding: {complete: false, missingFields: [profile, photo]}
+        default: {$ref: '#/components/responses/Error'}
+  /me/profile:
+    get:
+      operationId: getOwnProfile
+      summary: Read own profile and refresh short-lived photo URLs; 404 before creation
+      responses:
+        '200': {$ref: '#/components/responses/Profile'}
+        default: {$ref: '#/components/responses/Error'}
+    put:
+      operationId: replaceOwnProfile
+      summary: Create or fully replace own profile fields; preserve photos
+      description: Omitted optional fields reset to defaults. School and identity are derived from authentication.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ProfileInput'}
+            example: {displayName: Student, bio: Looking for a roommate, major: Computer Science, classYear: 2028, interests: [Music, Reading]}
+      responses:
+        '200': {$ref: '#/components/responses/Profile'}
+        default: {$ref: '#/components/responses/Error'}
+    patch:
+      operationId: editOwnProfile
+      summary: Update selected fields; requires an existing profile and at least one field
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ProfilePatch'}
+            example: {bio: Updated introduction, major: null}
+      responses:
+        '200': {$ref: '#/components/responses/Profile'}
+        default: {$ref: '#/components/responses/Error'}
+  /me/photos:
+    post:
+      operationId: uploadOwnPhoto
+      summary: Upload one photo through the backend; maximum three photos, one required
+      description: |
+        Requires a saved profile. JPEG or PNG, at most 5242880 bytes and 20 megapixels,
+        single frame. Server verifies decoding, normalizes orientation, resizes to fit
+        1600x1600 without enlargement, strips metadata and saves JPEG. Filename and
+        MIME type alone are not trusted. No additional multipart fields are allowed.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [photo]
+              properties:
+                photo: {type: string, format: binary}
+      responses:
+        '201':
+          description: Saved in the first free position
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/Photo'}
+        default: {$ref: '#/components/responses/Error'}
+  /me/photos/{photoId}:
+    delete:
+      operationId: deleteOwnPhoto
+      summary: Delete an owned photo; deleting the last makes profile incomplete
+      description: Missing or another user's photo returns 404. Does not renumber remaining photos.
+      parameters:
+        - name: photoId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      responses:
+        '204': {description: Deleted with no response body}
+        default: {$ref: '#/components/responses/Error'}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Supabase access token
+      description: Demo accepts demo-student or demo-second only in the separate demo process
+  responses:
+    Error:
+      description: |
+        400 invalid JSON/fields/photo UUID/multipart; 401 missing or invalid token;
+        403 unverified email/unsupported school/inactive account/disallowed origin;
+        404 missing/inaccessible resource; 409 missing profile or three-photo limit;
+        413 body/file too large; 415 wrong content type or invalid image;
+        429 rate limit; 500 internal failure; 503 Auth/Storage unavailable.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [error]
+            properties:
+              error:
+                type: object
+                additionalProperties: false
+                required: [code, message, requestId]
+                properties:
+                  code: {type: string}
+                  message: {type: string}
+                  requestId: {type: string, format: uuid}
+                  details: {type: object, additionalProperties: true}
+    Profile:
+      description: Own profile without email, phone, auth metadata or storage object keys
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data]
+            properties:
+              data: {$ref: '#/components/schemas/Profile'}
+  schemas:
+    School:
+      type: object
+      required: [id, name]
+      properties:
+        id: {type: string, format: uuid}
+        name: {type: string}
+    ProfileInput:
+      type: object
+      additionalProperties: false
+      required: [displayName]
+      properties: &profileFields
+        displayName: {type: string, minLength: 1, maxLength: 80, description: Trimmed; cannot be whitespace-only}
+        bio: {type: string, maxLength: 500}
+        major: {type: string, minLength: 1, maxLength: 100, nullable: true}
+        classYear: {type: integer, minimum: 2000, maximum: 2100, nullable: true}
+        interests:
+          type: array
+          maxItems: 10
+          uniqueItems: true
+          description: Trimmed entries must also be unique ignoring case
+          items: {type: string, minLength: 1, maxLength: 30}
+    ProfilePatch:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties: *profileFields
+    Profile:
+      type: object
+      additionalProperties: false
+      required: [userId, displayName, bio, major, classYear, interests, school, photos]
+      properties:
+        displayName: {type: string, minLength: 1, maxLength: 80}
+        bio: {type: string, maxLength: 500}
+        major: {type: string, nullable: true}
+        classYear: {type: integer, nullable: true}
+        interests: {type: array, items: {type: string}}
+        userId: {type: string, format: uuid}
+        school: {$ref: '#/components/schemas/School'}
+        photos:
+          type: array
+          maxItems: 3
+          items: {$ref: '#/components/schemas/Photo'}
+    Photo:
+      type: object
+      additionalProperties: false
+      required: [id, position, url, expiresAt]
+      properties:
+        id: {type: string, format: uuid}
+        position: {type: integer, minimum: 1, maximum: 3}
+        url: {type: string, format: uri}
+        expiresAt: {type: string, format: date-time}
