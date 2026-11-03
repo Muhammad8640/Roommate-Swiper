@@ -146,206 +146,302 @@ export default function ProfileManager({ token }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex justify-center items-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '80px 0' }}>
+        <Loader2 style={{ width: '32px', height: '32px', animation: 'spin 1s linear infinite', color: 'var(--accent)' }} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 flex justify-center items-center">
-      <div className="max-w-xl w-full bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-6 sm:p-8 border border-slate-100 dark:border-slate-800">
-        
-        {/* Header */}
-        <div className="mb-6 border-b border-slate-100 dark:border-slate-800 pb-5">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Profile Creation
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Set up how potential roommates will see you on the platform.
-          </p>
+    <div style={{
+      maxWidth: '600px',
+      margin: '40px auto',
+      background: 'var(--bg)',
+      boxShadow: 'var(--shadow)',
+      borderRadius: '16px',
+      padding: '32px',
+      border: '1px solid var(--border)',
+      textAlign: 'left'
+    }}>
+      <div style={{ marginBottom: '24px' }}>
+        <h2>Your Roommate Profile</h2>
+        <p style={{ color: 'var(--text)', fontSize: '15px', marginTop: '4px' }}>
+          Set up how potential roommates will see you on the platform.
+        </p>
+      </div>
+
+      {error && (
+        <div style={{
+          marginBottom: '16px',
+          padding: '12px 16px',
+          background: 'rgba(239, 68, 68, 0.1)',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          color: '#ef4444',
+          borderRadius: '8px',
+          fontSize: '14px'
+        }}>
+          {error}
+        </div>
+      )}
+
+      {successMsg && (
+        <div style={{
+          marginBottom: '16px',
+          padding: '12px 16px',
+          background: 'rgba(16, 185, 129, 0.1)',
+          border: '1px solid rgba(16, 185, 129, 0.3)',
+          color: '#10b981',
+          borderRadius: '8px',
+          fontSize: '14px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <CheckCircle2 style={{ width: '16px', height: '16px' }} /> {successMsg}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {/* Display Name */}
+        <div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
+            <User style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Display Name{' '}
+            <span style={{ color: '#ef4444' }}>*</span>
+          </label>
+          <input
+            type="text"
+            name="displayName"
+            maxLength={80}
+            required
+            value={formData.displayName}
+            onChange={handleChange}
+            placeholder="Alex Rivera"
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              border: '1px solid var(--border)',
+              background: 'var(--code-bg)',
+              color: 'var(--text-h)',
+              fontSize: '15px',
+              outline: 'none',
+              boxSizing: 'border-box'
+            }}
+          />
+          {fieldErrors.displayName && (
+            <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>
+              {fieldErrors.displayName}
+            </p>
+          )}
         </div>
 
-        {error && (
-          <div className="mb-4 p-4 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 rounded-xl text-sm">
-            {error}
-          </div>
-        )}
+        {/* Major */}
+        <div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
+            <BookOpen style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Major
+          </label>
+          <input
+            type="text"
+            name="major"
+            maxLength={100}
+            value={formData.major}
+            onChange={handleChange}
+            placeholder="Computer Science"
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              border: '1px solid var(--border)',
+              background: 'var(--code-bg)',
+              color: 'var(--text-h)',
+              fontSize: '15px',
+              outline: 'none',
+              boxSizing: 'border-box'
+            }}
+          />
+          {fieldErrors.major && (
+            <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>{fieldErrors.major}</p>
+          )}
+        </div>
 
-        {successMsg && (
-          <div className="mb-4 p-4 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 rounded-xl text-sm flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" /> {successMsg}
-          </div>
-        )}
+        {/* Class Year */}
+        <div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
+            <GraduationCap style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Class Year
+          </label>
+          <input
+            type="number"
+            name="classYear"
+            min={2000}
+            max={2100}
+            value={formData.classYear}
+            onChange={handleChange}
+            placeholder="2027"
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              border: '1px solid var(--border)',
+              background: 'var(--code-bg)',
+              color: 'var(--text-h)',
+              fontSize: '15px',
+              outline: 'none',
+              boxSizing: 'border-box'
+            }}
+          />
+          {fieldErrors.classYear && (
+            <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>
+              {fieldErrors.classYear}
+            </p>
+          )}
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Display Name */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-2">
-              <User className="w-4 h-4 text-indigo-500" /> Display Name{' '}
-              <span className="text-rose-500">*</span>
-            </label>
+        {/* Bio */}
+        <div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
+            <FileText style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Bio (Max 500 chars)
+          </label>
+          <textarea
+            name="bio"
+            rows="3"
+            maxLength={500}
+            value={formData.bio}
+            onChange={handleChange}
+            placeholder="Tell potential roommates about your living habits, sleep schedule, and cleanliness..."
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              border: '1px solid var(--border)',
+              background: 'var(--code-bg)',
+              color: 'var(--text-h)',
+              fontSize: '15px',
+              outline: 'none',
+              boxSizing: 'border-box',
+              resize: 'vertical'
+            }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text)', marginTop: '4px' }}>
+            {fieldErrors.bio ? (
+              <span style={{ color: '#ef4444' }}>{fieldErrors.bio}</span>
+            ) : (
+              <span />
+            )}
+            <span>{formData.bio.length}/500</span>
+          </div>
+        </div>
+
+        {/* Interests */}
+        <div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
+            <Heart style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Interests (Max 10)
+          </label>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
             <input
               type="text"
-              name="displayName"
-              maxLength={80}
-              required
-              value={formData.displayName}
-              onChange={handleChange}
-              placeholder="Alex Rivera"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm"
+              maxLength={30}
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddInterest();
+                }
+              }}
+              placeholder="Add interest (e.g. Coding, Gym)"
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                background: 'var(--code-bg)',
+                color: 'var(--text-h)',
+                fontSize: '14px',
+                outline: 'none'
+              }}
             />
-            {fieldErrors.displayName && (
-              <p className="text-xs text-rose-500 mt-1">
-                {fieldErrors.displayName}
-              </p>
-            )}
-          </div>
-
-          {/* Grid Layout for Major & Class Year */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* Major */}
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-indigo-500" /> Major
-              </label>
-              <input
-                type="text"
-                name="major"
-                maxLength={100}
-                value={formData.major}
-                onChange={handleChange}
-                placeholder="Computer Science"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm"
-              />
-              {fieldErrors.major && (
-                <p className="text-xs text-rose-500 mt-1">{fieldErrors.major}</p>
-              )}
-            </div>
-
-            {/* Class Year */}
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-2">
-                <GraduationCap className="w-4 h-4 text-indigo-500" /> Class Year
-              </label>
-              <input
-                type="number"
-                name="classYear"
-                min={2000}
-                max={2100}
-                value={formData.classYear}
-                onChange={handleChange}
-                placeholder="2027"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm"
-              />
-              {fieldErrors.classYear && (
-                <p className="text-xs text-rose-500 mt-1">
-                  {fieldErrors.classYear}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Bio */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-indigo-500" /> Bio
-            </label>
-            <textarea
-              name="bio"
-              rows="3"
-              maxLength={500}
-              value={formData.bio}
-              onChange={handleChange}
-              placeholder="Tell potential roommates about your living habits, sleep schedule, and cleanliness..."
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm resize-none"
-            />
-            <div className="flex justify-between text-xs text-slate-400 mt-1">
-              {fieldErrors.bio ? (
-                <span className="text-rose-500">{fieldErrors.bio}</span>
-              ) : (
-                <span />
-              )}
-              <span className={formData.bio.length > 450 ? 'text-amber-500' : ''}>
-                {formData.bio.length}/500
-              </span>
-            </div>
-          </div>
-
-          {/* Interests */}
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                <Heart className="w-4 h-4 text-indigo-500" /> Interests
-              </label>
-              <span className="text-xs text-slate-400">Max 10</span>
-            </div>
-
-            {/* Tag Badges Container */}
-            <div className="flex flex-wrap gap-2 mb-2 min-h-[40px] p-2.5 rounded-xl bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60">
-              {formData.interests.length === 0 && (
-                <span className="text-xs text-slate-400 italic px-1 py-1">No interests added yet</span>
-              )}
-              {formData.interests.map((interest) => (
-                <span
-                  key={interest}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800"
-                >
-                  {interest}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveInterest(interest)}
-                    className="hover:text-rose-500 focus:outline-none rounded-full p-0.5"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                maxLength={30}
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddInterest();
-                  }
-                }}
-                placeholder="Add interest (e.g. Coding, Gym)"
-                className="flex-1 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-slate-900 dark:text-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm"
-              />
-              <button
-                type="button"
-                onClick={handleAddInterest}
-                className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl transition flex items-center gap-1 font-medium text-sm shadow-xs"
-              >
-                <Plus className="w-4 h-4" /> Add
-              </button>
-            </div>
-            {fieldErrors.interests && (
-              <p className="text-xs text-rose-500 mt-1">
-                {fieldErrors.interests}
-              </p>
-            )}
-          </div>
-
-          {/* Submit Button */}
-          <div className="pt-2">
             <button
-              type="submit"
-              disabled={saving}
-              className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 transition transform active:scale-95 flex items-center justify-center gap-2 text-sm"
+              type="button"
+              onClick={handleAddInterest}
+              style={{
+                padding: '8px 16px',
+                background: 'var(--accent)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontWeight: '500',
+                fontSize: '14px'
+              }}
             >
-              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-              Save Profile
+              <Plus style={{ width: '16px', height: '16px' }} /> Add
             </button>
           </div>
-        </form>
-      </div>
+          {fieldErrors.interests && (
+            <p style={{ fontSize: '12px', color: '#ef4444', marginBottom: '8px' }}>
+              {fieldErrors.interests}
+            </p>
+          )}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+            {formData.interests.map((interest) => (
+              <span
+                key={interest}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  borderRadius: '9999px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  background: 'var(--accent-bg)',
+                  color: 'var(--accent)',
+                  border: '1px solid var(--accent-border)'
+                }}
+              >
+                {interest}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveInterest(interest)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: 0, display: 'flex', alignItems: 'center' }}
+                >
+                  <X style={{ width: '12px', height: '12px' }} />
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={saving}
+          style={{
+            width: '100%',
+            padding: '12px',
+            background: 'var(--accent)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '10px',
+            fontWeight: 'bold',
+            fontSize: '15px',
+            cursor: saving ? 'not-allowed' : 'pointer',
+            opacity: saving ? 0.7 : 1,
+            boxShadow: 'var(--shadow)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            marginTop: '10px'
+          }}
+        >
+          {saving && <Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />}
+          Save Profile
+        </button>
+      </form>
     </div>
   );
 }
