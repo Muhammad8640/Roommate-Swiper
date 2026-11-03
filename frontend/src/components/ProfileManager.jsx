@@ -146,7 +146,18 @@ export default function ProfileManager({ token }) {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '80px 0' }}>
+      <div style={{
+        minHeight: '100vh',
+        width: '100vw',
+        background: 'var(--bg)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        zIndex: 100
+      }}>
         <Loader2 style={{ width: '32px', height: '32px', animation: 'spin 1s linear infinite', color: 'var(--accent)' }} />
       </div>
     );
@@ -154,294 +165,310 @@ export default function ProfileManager({ token }) {
 
   return (
     <div style={{
-      maxWidth: '600px',
-      margin: '40px auto',
+      minHeight: '100vh',
+      width: '100vw',
       background: 'var(--bg)',
-      boxShadow: 'var(--shadow)',
-      borderRadius: '16px',
-      padding: '32px',
-      border: '1px solid var(--border)',
-      textAlign: 'left'
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: '40px 20px',
+      boxSizing: 'border-box',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      zIndex: 10,
+      overflowY: 'auto'
     }}>
-      <div style={{ marginBottom: '24px' }}>
-        <h2>Your Roommate Profile</h2>
-        <p style={{ color: 'var(--text)', fontSize: '15px', marginTop: '4px' }}>
-          Set up how potential roommates will see you on the platform.
-        </p>
-      </div>
-
-      {error && (
-        <div style={{
-          marginBottom: '16px',
-          padding: '12px 16px',
-          background: 'rgba(239, 68, 68, 0.1)',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          color: '#ef4444',
-          borderRadius: '8px',
-          fontSize: '14px'
-        }}>
-          {error}
-        </div>
-      )}
-
-      {successMsg && (
-        <div style={{
-          marginBottom: '16px',
-          padding: '12px 16px',
-          background: 'rgba(16, 185, 129, 0.1)',
-          border: '1px solid rgba(16, 185, 129, 0.3)',
-          color: '#10b981',
-          borderRadius: '8px',
-          fontSize: '14px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <CheckCircle2 style={{ width: '16px', height: '16px' }} /> {successMsg}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {/* Display Name */}
-        <div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
-            <User style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Display Name{' '}
-            <span style={{ color: '#ef4444' }}>*</span>
-          </label>
-          <input
-            type="text"
-            name="displayName"
-            maxLength={80}
-            required
-            value={formData.displayName}
-            onChange={handleChange}
-            placeholder="Alex Rivera"
-            style={{
-              width: '100%',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              border: '1px solid var(--border)',
-              background: 'var(--code-bg)',
-              color: 'var(--text-h)',
-              fontSize: '15px',
-              outline: 'none',
-              boxSizing: 'border-box'
-            }}
-          />
-          {fieldErrors.displayName && (
-            <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>
-              {fieldErrors.displayName}
-            </p>
-          )}
+      <div style={{
+        maxWidth: '600px',
+        width: '100%',
+        background: 'var(--bg)',
+        boxShadow: 'var(--shadow)',
+        borderRadius: '16px',
+        padding: '32px',
+        border: '1px solid var(--border)',
+        textAlign: 'left'
+      }}>
+        <div style={{ marginBottom: '24px' }}>
+          <h2>Your Roommate Profile</h2>
+          <p style={{ color: 'var(--text)', fontSize: '15px', marginTop: '4px' }}>
+            Set up how potential roommates will see you on the platform.
+          </p>
         </div>
 
-        {/* Major */}
-        <div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
-            <BookOpen style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Major
-          </label>
-          <input
-            type="text"
-            name="major"
-            maxLength={100}
-            value={formData.major}
-            onChange={handleChange}
-            placeholder="Computer Science"
-            style={{
-              width: '100%',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              border: '1px solid var(--border)',
-              background: 'var(--code-bg)',
-              color: 'var(--text-h)',
-              fontSize: '15px',
-              outline: 'none',
-              boxSizing: 'border-box'
-            }}
-          />
-          {fieldErrors.major && (
-            <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>{fieldErrors.major}</p>
-          )}
-        </div>
-
-        {/* Class Year */}
-        <div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
-            <GraduationCap style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Class Year
-          </label>
-          <input
-            type="number"
-            name="classYear"
-            min={2000}
-            max={2100}
-            value={formData.classYear}
-            onChange={handleChange}
-            placeholder="2027"
-            style={{
-              width: '100%',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              border: '1px solid var(--border)',
-              background: 'var(--code-bg)',
-              color: 'var(--text-h)',
-              fontSize: '15px',
-              outline: 'none',
-              boxSizing: 'border-box'
-            }}
-          />
-          {fieldErrors.classYear && (
-            <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>
-              {fieldErrors.classYear}
-            </p>
-          )}
-        </div>
-
-        {/* Bio */}
-        <div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
-            <FileText style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Bio (Max 500 chars)
-          </label>
-          <textarea
-            name="bio"
-            rows="3"
-            maxLength={500}
-            value={formData.bio}
-            onChange={handleChange}
-            placeholder="Tell potential roommates about your living habits, sleep schedule, and cleanliness..."
-            style={{
-              width: '100%',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              border: '1px solid var(--border)',
-              background: 'var(--code-bg)',
-              color: 'var(--text-h)',
-              fontSize: '15px',
-              outline: 'none',
-              boxSizing: 'border-box',
-              resize: 'vertical'
-            }}
-          />
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text)', marginTop: '4px' }}>
-            {fieldErrors.bio ? (
-              <span style={{ color: '#ef4444' }}>{fieldErrors.bio}</span>
-            ) : (
-              <span />
-            )}
-            <span>{formData.bio.length}/500</span>
+        {error && (
+          <div style={{
+            marginBottom: '16px',
+            padding: '12px 16px',
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            color: '#ef4444',
+            borderRadius: '8px',
+            fontSize: '14px'
+          }}>
+            {error}
           </div>
-        </div>
+        )}
 
-        {/* Interests */}
-        <div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
-            <Heart style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Interests (Max 10)
-          </label>
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+        {successMsg && (
+          <div style={{
+            marginBottom: '16px',
+            padding: '12px 16px',
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            color: '#10b981',
+            borderRadius: '8px',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <CheckCircle2 style={{ width: '16px', height: '16px' }} /> {successMsg}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Display Name */}
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
+              <User style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Display Name{' '}
+              <span style={{ color: '#ef4444' }}>*</span>
+            </label>
             <input
               type="text"
-              maxLength={30}
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddInterest();
-                }
-              }}
-              placeholder="Add interest (e.g. Coding, Gym)"
+              name="displayName"
+              maxLength={80}
+              required
+              value={formData.displayName}
+              onChange={handleChange}
+              placeholder="Alex Rivera"
               style={{
-                flex: 1,
-                padding: '8px 12px',
+                width: '100%',
+                padding: '10px 14px',
                 borderRadius: '8px',
                 border: '1px solid var(--border)',
                 background: 'var(--code-bg)',
                 color: 'var(--text-h)',
-                fontSize: '14px',
-                outline: 'none'
+                fontSize: '15px',
+                outline: 'none',
+                boxSizing: 'border-box'
               }}
             />
-            <button
-              type="button"
-              onClick={handleAddInterest}
-              style={{
-                padding: '8px 16px',
-                background: 'var(--accent)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                fontWeight: '500',
-                fontSize: '14px'
-              }}
-            >
-              <Plus style={{ width: '16px', height: '16px' }} /> Add
-            </button>
+            {fieldErrors.displayName && (
+              <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>
+                {fieldErrors.displayName}
+              </p>
+            )}
           </div>
-          {fieldErrors.interests && (
-            <p style={{ fontSize: '12px', color: '#ef4444', marginBottom: '8px' }}>
-              {fieldErrors.interests}
-            </p>
-          )}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
-            {formData.interests.map((interest) => (
-              <span
-                key={interest}
+
+          {/* Major */}
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
+              <BookOpen style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Major
+            </label>
+            <input
+              type="text"
+              name="major"
+              maxLength={100}
+              value={formData.major}
+              onChange={handleChange}
+              placeholder="Computer Science"
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                background: 'var(--code-bg)',
+                color: 'var(--text-h)',
+                fontSize: '15px',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+            />
+            {fieldErrors.major && (
+              <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>{fieldErrors.major}</p>
+            )}
+          </div>
+
+          {/* Class Year */}
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
+              <GraduationCap style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Class Year
+            </label>
+            <input
+              type="number"
+              name="classYear"
+              min={2000}
+              max={2100}
+              value={formData.classYear}
+              onChange={handleChange}
+              placeholder="2027"
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                background: 'var(--code-bg)',
+                color: 'var(--text-h)',
+                fontSize: '15px',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+            />
+            {fieldErrors.classYear && (
+              <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>
+                {fieldErrors.classYear}
+              </p>
+            )}
+          </div>
+
+          {/* Bio */}
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
+              <FileText style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Bio (Max 500 chars)
+            </label>
+            <textarea
+              name="bio"
+              rows="3"
+              maxLength={500}
+              value={formData.bio}
+              onChange={handleChange}
+              placeholder="Tell potential roommates about your living habits, sleep schedule, and cleanliness..."
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                background: 'var(--code-bg)',
+                color: 'var(--text-h)',
+                fontSize: '15px',
+                outline: 'none',
+                boxSizing: 'border-box',
+                resize: 'vertical'
+              }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text)', marginTop: '4px' }}>
+              {fieldErrors.bio ? (
+                <span style={{ color: '#ef4444' }}>{fieldErrors.bio}</span>
+              ) : (
+                <span />
+              )}
+              <span>{formData.bio.length}/500</span>
+            </div>
+          </div>
+
+          {/* Interests */}
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
+              <Heart style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Interests (Max 10)
+            </label>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+              <input
+                type="text"
+                maxLength={30}
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddInterest();
+                  }
+                }}
+                placeholder="Add interest (e.g. Coding, Gym)"
                 style={{
-                  display: 'inline-flex',
+                  flex: 1,
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--code-bg)',
+                  color: 'var(--text-h)',
+                  fontSize: '14px',
+                  outline: 'none'
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleAddInterest}
+                style={{
+                  padding: '8px 16px',
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: '4px 10px',
-                  borderRadius: '9999px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  background: 'var(--accent-bg)',
-                  color: 'var(--accent)',
-                  border: '1px solid var(--accent-border)'
+                  gap: '4px',
+                  fontWeight: '500',
+                  fontSize: '14px'
                 }}
               >
-                {interest}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveInterest(interest)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: 0, display: 'flex', alignItems: 'center' }}
+                <Plus style={{ width: '16px', height: '16px' }} /> Add
+              </button>
+            </div>
+            {fieldErrors.interests && (
+              <p style={{ fontSize: '12px', color: '#ef4444', marginBottom: '8px' }}>
+                {fieldErrors.interests}
+              </p>
+            )}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+              {formData.interests.map((interest) => (
+                <span
+                  key={interest}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '4px 10px',
+                    borderRadius: '9999px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    background: 'var(--accent-bg)',
+                    color: 'var(--accent)',
+                    border: '1px solid var(--accent-border)'
+                  }}
                 >
-                  <X style={{ width: '12px', height: '12px' }} />
-                </button>
-              </span>
-            ))}
+                  {interest}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveInterest(interest)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: 0, display: 'flex', alignItems: 'center' }}
+                  >
+                    <X style={{ width: '12px', height: '12px' }} />
+                  </button>
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={saving}
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: 'var(--accent)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '10px',
-            fontWeight: 'bold',
-            fontSize: '15px',
-            cursor: saving ? 'not-allowed' : 'pointer',
-            opacity: saving ? 0.7 : 1,
-            boxShadow: 'var(--shadow)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            marginTop: '10px'
-          }}
-        >
-          {saving && <Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />}
-          Save Profile
-        </button>
-      </form>
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={saving}
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: 'var(--accent)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '10px',
+              fontWeight: 'bold',
+              fontSize: '15px',
+              cursor: saving ? 'not-allowed' : 'pointer',
+              opacity: saving ? 0.7 : 1,
+              boxShadow: 'var(--shadow)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              marginTop: '10px'
+            }}
+          >
+            {saving && <Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />}
+            Save Profile
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
