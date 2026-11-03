@@ -192,12 +192,16 @@ export default function ProfileManager({ token }) {
   if (loading) {
     return (
       <div style={{
-        minHeight: '100vh',
-        width: '100%',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
         background: 'var(--bg)',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        zIndex: 9999
       }}>
         <Loader2 style={{ width: '32px', height: '32px', animation: 'spin 1s linear infinite', color: 'var(--accent)' }} />
       </div>
@@ -206,14 +210,19 @@ export default function ProfileManager({ token }) {
 
   return (
     <div style={{
-      minHeight: '100vh',
-      width: '100%',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
       background: 'var(--bg)',
+      overflowY: 'auto',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'flex-start',
       padding: '40px 20px',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      zIndex: 999
     }}>
       <div style={{
         maxWidth: '600px',
@@ -224,7 +233,8 @@ export default function ProfileManager({ token }) {
         padding: '32px',
         border: '1px solid var(--border)',
         textAlign: 'left',
-        marginBottom: '40px'
+        margin: 'auto',
+        boxSizing: 'border-box'
       }}>
         <div style={{ marginBottom: '24px' }}>
           <h2>Your Roommate Profile</h2>
