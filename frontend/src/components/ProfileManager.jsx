@@ -9,6 +9,8 @@ import {
   X,
   Loader2,
   CheckCircle2,
+  Camera,
+  Trash2,
 } from 'lucide-react';
 
 const API_BASE =
@@ -21,10 +23,12 @@ export default function ProfileManager({ token }) {
     major: '',
     classYear: new Date().getFullYear(),
     interests: [],
+    avatarUrl: '', // Stores uploaded image URL or ID
   });
   const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [successMsg, setSuccessMsg] = useState('');
@@ -38,7 +42,6 @@ export default function ProfileManager({ token }) {
         });
 
         if (res.status === 404) {
-          // Uninitialized profile state for initial creation.
           setLoading(false);
           return;
         }
@@ -55,6 +58,7 @@ export default function ProfileManager({ token }) {
             major: json.data.major || '',
             classYear: json.data.classYear || new Date().getFullYear(),
             interests: json.data.interests || [],
+            avatarUrl: json.data.avatarUrl || json.data.photoUrl || '',
           });
         }
       } catch (err) {
@@ -75,11 +79,55 @@ export default function ProfileManager({ token }) {
     }));
   };
 
+  // Upload photo handler matching express multer route: POST /me/photos
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Client-side file size check (5MB limit set in backend route)
+    if (file.size > 5242880) {
+      setError('Photo size exceeds the 5MB limit.');
+      return;
+    }
+
+    setUploadingPhoto(true);
+    setError(null);
+
+    const bodyData = new FormData();
+    bodyData.append('photo', file); // Matches multer single('photo')
+
+    try {
+      const res = await fetch(`${API_BASE}/me/photos`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: bodyData,
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error?.message || 'Failed to upload photo');
+      }
+
+      // Update state with returned image URL/data
+      const newAvatarUrl = json.data?.url || json.data?.photoUrl || json.data?.id;
+      setFormData((prev) => ({
+        ...prev,
+        avatarUrl: newAvatarUrl,
+      }));
+      setSuccessMsg('Profile photo updated!');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   const handleAddInterest = () => {
     const trimmed = tagInput.trim();
     if (!trimmed) return;
 
-    // Case-insensitive uniqueness enforcement and 10-item restriction.
     const exists = formData.interests.some(
       (interest) => interest.toLowerCase() === trimmed.toLowerCase(),
     );
@@ -226,6 +274,71 @@ export default function ProfileManager({ token }) {
             <CheckCircle2 style={{ width: '16px', height: '16px' }} /> {successMsg}
           </div>
         )}
+
+        {/* Profile Picture Upload Section */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px' }}>
+          <div style={{ position: 'relative', width: '96px', height: '96px' }}>
+            {formData.avatarUrl ? (
+              <img
+                src={formData.avatarUrl}
+                alt="Profile"
+                style={{
+                  width: '96px',
+                  height: '96px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '2px solid var(--accent)'
+                }}
+              />
+            ) : (
+              <div style={{
+                width: '96px',
+                height: '96px',
+                borderRadius: '50%',
+                background: 'var(--code-bg)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1px dashed var(--border)',
+                color: 'var(--text)'
+              }}>
+                <User style={{ width: '40px', height: '40px' }} />
+              </div>
+            )}
+
+            {/* Upload Badge Button */}
+            <label style={{
+              position: 'absolute',
+              bottom: '0',
+              right: '0',
+              background: 'var(--accent)',
+              color: '#fff',
+              borderRadius: '50%',
+              padding: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: 'var(--shadow)'
+            }}>
+              {uploadingPhoto ? (
+                <Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
+              ) : (
+                <Camera style={{ width: '16px', height: '16px' }} />
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                disabled={uploadingPhoto}
+                style={{ display: 'none' }}
+              />
+            </label>
+          </div>
+          <span style={{ fontSize: '12px', color: 'var(--text)', marginTop: '8px' }}>
+            Click camera to upload photo (Max 5MB)
+          </span>
+        </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Display Name */}
