@@ -10,7 +10,6 @@ import {
   Loader2,
   CheckCircle2,
   Camera,
-  Trash2,
 } from 'lucide-react';
 
 const API_BASE =
@@ -23,7 +22,7 @@ export default function ProfileManager({ token }) {
     major: '',
     classYear: new Date().getFullYear(),
     interests: [],
-    avatarUrl: '', // Stores uploaded image URL or ID
+    avatarUrl: '',
   });
   const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(true);
@@ -84,7 +83,6 @@ export default function ProfileManager({ token }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Client-side file size check (5MB limit set in backend route)
     if (file.size > 5242880) {
       setError('Photo size exceeds the 5MB limit.');
       return;
@@ -94,7 +92,7 @@ export default function ProfileManager({ token }) {
     setError(null);
 
     const bodyData = new FormData();
-    bodyData.append('photo', file); // Matches multer single('photo')
+    bodyData.append('photo', file);
 
     try {
       const res = await fetch(`${API_BASE}/me/photos`, {
@@ -110,7 +108,6 @@ export default function ProfileManager({ token }) {
         throw new Error(json.error?.message || 'Failed to upload photo');
       }
 
-      // Update state with returned image URL/data
       const newAvatarUrl = json.data?.url || json.data?.photoUrl || json.data?.id;
       setFormData((prev) => ({
         ...prev,
@@ -196,15 +193,11 @@ export default function ProfileManager({ token }) {
     return (
       <div style={{
         minHeight: '100vh',
-        width: '100vw',
+        width: '100%',
         background: 'var(--bg)',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        zIndex: 100
       }}>
         <Loader2 style={{ width: '32px', height: '32px', animation: 'spin 1s linear infinite', color: 'var(--accent)' }} />
       </div>
@@ -214,18 +207,13 @@ export default function ProfileManager({ token }) {
   return (
     <div style={{
       minHeight: '100vh',
-      width: '100vw',
+      width: '100%',
       background: 'var(--bg)',
       display: 'flex',
       justifyContent: 'center',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       padding: '40px 20px',
-      boxSizing: 'border-box',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      zIndex: 10,
-      overflowY: 'auto'
+      boxSizing: 'border-box'
     }}>
       <div style={{
         maxWidth: '600px',
@@ -235,7 +223,8 @@ export default function ProfileManager({ token }) {
         borderRadius: '16px',
         padding: '32px',
         border: '1px solid var(--border)',
-        textAlign: 'left'
+        textAlign: 'left',
+        marginBottom: '40px'
       }}>
         <div style={{ marginBottom: '24px' }}>
           <h2>Your Roommate Profile</h2>
