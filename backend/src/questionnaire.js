@@ -11,8 +11,13 @@ const scenarios = [
 
 export const QUESTION_IDS = Object.freeze(scenarios.map(([id]) => id));
 export const QUESTIONNAIRE_VERSION = 1;
+// Checkboxes identify forbidden candidate answers; labels/IDs are server-defined.
+export const NON_NEGOTIABLE_CHOICES = Object.freeze(scenarios.flatMap(([questionId, , options]) =>
+  options.map((label, value) => ({ questionId, value, label: `${questionId}: ${label}` }))
+));
 export const questionnaire = Object.freeze({
   version: QUESTIONNAIRE_VERSION,
+  nonNegotiableChoices: NON_NEGOTIABLE_CHOICES,
   questions: scenarios.map(([id, prompt, options]) => ({
     id, prompt, options: options.map((label, value) => ({ value, label }))
   }))

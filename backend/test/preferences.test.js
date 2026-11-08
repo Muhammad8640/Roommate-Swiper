@@ -7,11 +7,11 @@ import { readFile } from 'node:fs/promises';
 import { createApp } from '../src/app.js';
 import { localDatabase, localAuth, localStorage, studentId, secondId } from '../scripts/local-fixtures.js';
 import { migrate } from '../scripts/migration.js';
-import { QUESTION_IDS } from '../src/questionnaire.js';
+import { QUESTION_IDS, NON_NEGOTIABLE_CHOICES } from '../src/questionnaire.js';
 
 const payload = () => ({ questionnaireVersion: 1,
   scenarioAnswers: { cleanliness: 0, sleep: 1, noise: 2, guests: 1, smoking: 0, sharing: 3 },
-  dealbreakers: { smoking: [0], noise: [2, 0, 1] } });
+  nonNegotiables: { smoking: [3], noise: [3, 1, 2] } });
 
 describe('Own questionnaire preferences', () => {
   let database, app;
@@ -27,6 +27,9 @@ describe('Own questionnaire preferences', () => {
   it('publishes exactly six stable questions with ordered option IDs to verified accounts', async () => {
     const response = await api('get', '/questionnaire').expect(200);
     assert.equal(response.body.data.version, 1);
+    assert.deepEqual(response.body.data.nonNegotiableChoices, NON_NEGOTIABLE_CHOICES);
+    assert.equal(NON_NEGOTIABLE_CHOICES.length, 24);
+    assert.equal(new Set(NON_NEGOTIABLE_CHOICES.map(c => `${c.questionId}:${c.value}`)).size, 24);
     assert.deepEqual(response.body.data.questions.map(q => q.id), QUESTION_IDS);
     for (const q of response.body.data.questions) {
       assert.ok(q.prompt.length > 10);
@@ -50,7 +53,7 @@ describe('Own questionnaire preferences', () => {
     await api('patch').send({ scenarioAnswers: { noise: 1 } }).expect(404);
     const saved = (await api('put').send(payload()).expect(200)).body.data;
     assert.deepEqual(saved.scenarioAnswers, payload().scenarioAnswers);
-    assert.deepEqual(saved.dealbreakers.noise, [0, 1, 2]);
+    assert.deepEqual(saved.nonNegotiables.noise, [1, 2, 3]);
     assert.equal(saved.userId, studentId);
     assert.equal(saved.complete, true);
     assert.ok(Date.parse(saved.updatedAt));
@@ -60,9 +63,9 @@ describe('Own questionnaire preferences', () => {
     let changed = (await api('patch').send({ scenarioAnswers: { sleep: 3 } }).expect(200)).body.data;
     assert.equal(changed.scenarioAnswers.sleep, 3);
     assert.equal(changed.scenarioAnswers.noise, 2);
-    assert.deepEqual(changed.dealbreakers, saved.dealbreakers);
-    changed = (await api('patch').send({ dealbreakers: {} }).expect(200)).body.data;
-    assert.deepEqual(changed.dealbreakers, {});
+    assert.deepEqual(changed.nonNegotiables, saved.nonNegotiables);
+    changed = (await api('patch').send({ nonNegotiables: {} }).expect(200)).body.data;
+    assert.deepEqual(changed.nonNegotiables, {});
     assert.equal(changed.scenarioAnswers.sleep, 3);
     await api('put').send(payload()).expect(200);
     assert.deepEqual((await api('get').expect(200)).body.data.scenarioAnswers, payload().scenarioAnswers);
@@ -75,7 +78,7 @@ describe('Own questionnaire preferences', () => {
     const second = payload(); second.scenarioAnswers.sleep = 3;
     assert.equal((await api('put', undefined, 'demo-second').send(second).expect(200)).body.data.userId, secondId);
     assert.equal((await api('get').expect(200)).body.data.scenarioAnswers.sleep, 1);
-    await api('patch').send({ userId: secondId, dealbreakers: {} }).expect(400);
+    await api('patch').send({ userId: secondId, nonNegotiables: {} }).expect(400);
     await api('get', `/users/${studentId}/preferences`, 'demo-second').expect(404);
   });
   it('rejects incomplete, unknown, noninteger, duplicate and version-mismatched input without data loss', async () => {
@@ -85,8 +88,11 @@ describe('Own questionnaire preferences', () => {
       { ...payload(), scenarioAnswers: { sleep: 1 } },
       ...[-1, 4, 1.5, '1', null, true].map(noise => ({ ...payload(), scenarioAnswers: { ...payload().scenarioAnswers, noise } })),
       { ...payload(), scenarioAnswers: { ...payload().scenarioAnswers, other: 0 } },
-      ...[[], [1, 1], [4], ['1'], null].map(noise => ({ ...payload(), dealbreakers: { noise } })),
-      { ...payload(), dealbreakers: { unknown: [1] } }, { ...payload(), score: 100 },
+      ...[[], [1, 1], [4], ['1'], null].map(noise => ({ ...payload(), nonNegotiables: { noise } })),
+      { ...payload(), nonNegotiables: { unknown: [1] } },
+      { ...payload(), nonNegotiables: 'No smokers please' },
+      { ...payload(), nonNegotiables: { smoking: ['No smoking'] } },
+      { ...payload(), dealbreakers: { smoking: [0] } }, { ...payload(), score: 100 },
       { ...payload(), userId: secondId }
     ];
     for (const body of bad) {
@@ -112,7 +118,7 @@ describe('Own questionnaire preferences', () => {
   });
   it('enforces profile references and valid answers/restrictions in SQL and cascades profile deletion', async () => {
     const insert = (id, a, d) => database.db.query(`INSERT INTO roommate.preferences
-      (user_id, questionnaire_version, scenario_answers, dealbreakers) VALUES ($1, 1, $2::jsonb, $3::jsonb)`, [id, JSON.stringify(a), JSON.stringify(d)]);
+      (user_id, questionnaire_version, scenario_answers, non_negotiables) VALUES ($1, 1, $2::jsonb, $3::jsonb)`, [id, JSON.stringify(a), JSON.stringify(d)]);
     await assert.rejects(insert(studentId, payload().scenarioAnswers, {}), { code: '23503' });
     await profile();
     for (const [a, d] of [[{}, {}], [[], {}], [null, {}], [payload().scenarioAnswers, { smoking: [0, 0] }], [payload().scenarioAnswers, { typo: [1] }], [payload().scenarioAnswers, { noise: null }]]) {
@@ -129,7 +135,7 @@ describe('Own questionnaire preferences', () => {
     try {
       await api('put').send(payload()).expect(200);
       await api('get').expect(200);
-      await api('patch').send({ dealbreakers: {} }).expect(200);
+      await api('patch').send({ nonNegotiables: {} }).expect(200);
     } finally { await database.db.exec('RESET ROLE'); }
     for (const role of ['anon', 'authenticated']) {
       await database.db.exec(`SET ROLE ${role}`);
@@ -139,22 +145,32 @@ describe('Own questionnaire preferences', () => {
   });
 });
 
-it('upgrades an existing milestone-1 database without rewriting its migration or losing profile data', async () => {
+it('converts legacy accepted-answer restrictions without changing existing profile data or migration checksums', async () => {
   const db = new PGlite();
   try {
     const source = await readFile(new URL('../migrations/001_accounts_profiles.sql', import.meta.url), 'utf8');
     await db.exec('CREATE SCHEMA auth; CREATE TABLE auth.users (id uuid PRIMARY KEY); CREATE ROLE anon; CREATE ROLE authenticated; CREATE SCHEMA roommate; CREATE TABLE roommate.migrations (name text PRIMARY KEY, checksum text NOT NULL, applied_at timestamptz NOT NULL DEFAULT now());');
     await db.exec(source);
+    const preferencesSource = await readFile(new URL('../migrations/002_preferences.sql', import.meta.url), 'utf8');
+    await db.exec(preferencesSource);
+    await db.query('INSERT INTO roommate.migrations (name, checksum) VALUES ($1, $2)', ['002_preferences.sql', createHash('sha256').update(preferencesSource).digest('hex')]);
     await db.query('INSERT INTO roommate.migrations (name, checksum) VALUES ($1, $2)', ['001_accounts_profiles.sql', createHash('sha256').update(source).digest('hex')]);
     await db.exec(`INSERT INTO auth.users VALUES ('${studentId}');
       INSERT INTO roommate.schools (id,name) VALUES ('${studentId}', 'Existing School');
       INSERT INTO roommate.accounts (id, school_id) VALUES ('${studentId}', '${studentId}');
       INSERT INTO roommate.profiles (user_id,display_name) VALUES ('${studentId}', 'Keep this profile');`);
+    await db.query(`INSERT INTO roommate.preferences (user_id, questionnaire_version, scenario_answers, dealbreakers)
+      VALUES ($1, 1, $2::jsonb, $3::jsonb)`, [studentId, JSON.stringify(payload().scenarioAnswers),
+      JSON.stringify({ smoking: [0], noise: [0, 1, 2], sharing: [0, 1, 2, 3] })]);
     const query = (sql, values) => values === undefined ? db.exec(sql).then(results => results.at(-1)) : db.query(sql, values);
     const pool = { query, connect: async () => ({ query, release() {} }) };
     assert.equal(await migrate(pool), true);
     assert.equal(await migrate(pool), false);
     assert.equal((await db.query('SELECT display_name FROM roommate.profiles')).rows[0].display_name, 'Keep this profile');
-    assert.equal((await db.query('SELECT count(*)::int AS count FROM roommate.migrations')).rows[0].count, 2);
+    assert.equal((await db.query('SELECT count(*)::int AS count FROM roommate.migrations')).rows[0].count, 3);
+    const saved = (await db.query('SELECT scenario_answers, non_negotiables FROM roommate.preferences')).rows[0];
+    assert.deepEqual(saved.scenario_answers, payload().scenarioAnswers);
+    assert.deepEqual(saved.non_negotiables, { smoking: [1, 2, 3], noise: [3] });
+    await assert.rejects(db.query('SELECT dealbreakers FROM roommate.preferences'), { code: '42703' });
   } finally { await db.close(); }
 });

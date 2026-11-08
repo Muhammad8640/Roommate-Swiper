@@ -4,16 +4,16 @@ import { QUESTION_IDS, QUESTIONNAIRE_VERSION } from '../questionnaire.js';
 
 const answer = z.number().int().min(0).max(3);
 const answers = z.strictObject(Object.fromEntries(QUESTION_IDS.map(id => [id, answer])));
-const allowed = z.array(answer).min(1).max(4)
-  .refine(values => new Set(values).size === values.length, 'Accepted answers must be unique')
+const rejected = z.array(answer).min(1).max(4)
+  .refine(values => new Set(values).size === values.length, 'Rejected answers must be unique')
   .transform(values => [...values].sort((a, b) => a - b));
-const dealbreakers = z.strictObject(Object.fromEntries(QUESTION_IDS.map(id => [id, allowed.optional()])));
-const full = z.strictObject({ questionnaireVersion: z.literal(QUESTIONNAIRE_VERSION), scenarioAnswers: answers, dealbreakers });
+const nonNegotiables = z.strictObject(Object.fromEntries(QUESTION_IDS.map(id => [id, rejected.optional()])));
+const full = z.strictObject({ questionnaireVersion: z.literal(QUESTIONNAIRE_VERSION), scenarioAnswers: answers, nonNegotiables });
 const patchSchema = z.strictObject({
   questionnaireVersion: z.literal(QUESTIONNAIRE_VERSION).optional(),
   scenarioAnswers: answers.partial().refine(values => Object.keys(values).length > 0, 'Submit at least one answer').optional(),
-  dealbreakers: dealbreakers.optional()
-}).refine(value => value.scenarioAnswers !== undefined || value.dealbreakers !== undefined, 'Submit answers or dealbreakers');
+  nonNegotiables: nonNegotiables.optional()
+}).refine(value => value.scenarioAnswers !== undefined || value.nonNegotiables !== undefined, 'Submit answers or nonNegotiables');
 
 function validate(schema, body) {
   const result = schema.safeParse(body);
@@ -47,7 +47,7 @@ export function preferencesService(repository, profiles) {
             questionnaireVersion: current.questionnaireVersion,
             scenarioAnswers: { ...current.scenarioAnswers, ...submitted.scenarioAnswers },
             // PATCH replaces this entire map when supplied. {} clears restrictions.
-            dealbreakers: submitted.dealbreakers ?? current.dealbreakers
+            nonNegotiables: submitted.nonNegotiables ?? current.nonNegotiables
           });
         }
         await repository.write(client, identity.id, values);

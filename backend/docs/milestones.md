@@ -7,7 +7,7 @@ P1/P2 and the updated project requirements define the application. The stack is 
 | Milestone | Testable backend feature | Approximate allocation |
 | --- | --- | --- |
 | 1 | School verification, application account bootstrap, create/read/edit own profile, photo upload/read/delete | 5 hours |
-| 2 | Six scenario answers, saved roommate preferences and dealbreakers, reciprocal filtering logic, equal-weight compatibility scoring | 2.5 hours |
+| 2 | Six scenario answers, saved roommate preferences and nonNegotiables, reciprocal filtering logic, equal-weight compatibility scoring | 2.5 hours |
 | 3 | Eligible same-school profile discovery, compatibility information, left/right swipe persistence | 3.5 hours |
 | 4 | Mutual matching, match list, authorized contact sharing, blocking, reporting, integration handoff | 4 hours |
 
@@ -17,7 +17,7 @@ For each milestone: implement only necessary schema/API/services, run relevant t
 
 ## Milestone 1 decisions
 
-Current local work also includes your Milestone 2 portion: questionnaire, saved answers/dealbreakers, migration and API tests/documentation. Your partner's scoring and reciprocal comparison remain outstanding. See [preferences.md](preferences.md). Completing this portion does not mark all of Milestone 2 complete.
+Current local work also includes your Milestone 2 portion: questionnaire, saved answers/nonNegotiables, migration and API tests/documentation. Your partner's scoring and reciprocal comparison remain outstanding. See [preferences.md](preferences.md). Completing this portion does not mark all of Milestone 2 complete.
 
 - Supabase handles registration, passwords, confirmation emails, login/logout, recovery and refresh. No duplicate password database or Express login facade.
 - Exact school-domain allowlist, verified current email and active account required before any profile operation.
@@ -29,7 +29,7 @@ Current local work also includes your Milestone 2 portion: questionnaire, saved 
 
 ## Preserved future behavior
 
-The six initial scenarios cover cleanliness, sleep, noise, guests, smoking/vaping and shared belongings. Each has ordered answers 0..3 with equal weights; similarity is `1 - abs(a-b)/3`, and the score is the rounded average similarity times 100. Dealbreakers exclude candidates reciprocally before scoring/ranking. Both likes create one mutual match. Structured email/phone remain private until an authorized mutual match. Blocking prevents interactions and contact access; reports support manual review.
+The six initial scenarios cover cleanliness, sleep, noise, guests, smoking/vaping and shared belongings. Each has ordered answers 0..3 with equal weights; similarity is `1 - abs(a-b)/3`, and the score is the rounded average similarity times 100. NonNegotiables exclude candidates reciprocally before scoring/ranking. Both likes create one mutual match. Structured email/phone remain private until an authorized mutual match. Blocking prevents interactions and contact access; reports support manual review.
 
 In-app messaging, push transport, deployment and an administrative UI are outside this milestone. Contact sharing after mutual matching is the planned connection mechanism for the MVP.
 

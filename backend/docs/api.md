@@ -40,9 +40,9 @@ React uses the Supabase browser SDK for sessions and sends `Authorization: Beare
 | POST | `/me/photos` | Verified school account | Upload one photo to a saved profile |
 | DELETE | `/me/photos/{photoId}` | Verified school account | Delete only an owned photo |
 | GET | `/questionnaire` | Verified school account | Six versioned prompts and option labels |
-| GET | `/me/preferences` | Verified school account | Read own saved answers/dealbreakers |
+| GET | `/me/preferences` | Verified school account | Read own saved answers/nonNegotiables |
 | PUT | `/me/preferences` | Verified school account | Create or replace complete preferences after saving profile |
-| PATCH | `/me/preferences` | Verified school account | Merge selected answers or replace dealbreaker map |
+| PATCH | `/me/preferences` | Verified school account | Merge selected answers or replace non-negotiable map |
 
 See [preferences.md](preferences.md) for versioned fields, PATCH behavior, demo steps and the compatibility partner's input contract. Scoring, reciprocal filtering, discovery, swipes, matches, contact sharing, blocks and reports are not implemented. There is no arbitrary-user profile or preferences endpoint.
 

@@ -47,7 +47,7 @@ try {
   assert.equal(questionnaire.questions.length, 6);
   const preferences = { questionnaireVersion: questionnaire.version,
     scenarioAnswers: Object.fromEntries(questionnaire.questions.map(q => [q.id, 0])),
-    dealbreakers: { smoking: [0] } };
+    nonNegotiables: { smoking: [3] } };
   await call('/me/preferences', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(preferences) });
   assert.deepEqual((await call('/me/preferences')).data.scenarioAnswers, preferences.scenarioAnswers);
   await call('/me/preferences', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scenarioAnswers: { sleep: 3 } }) });

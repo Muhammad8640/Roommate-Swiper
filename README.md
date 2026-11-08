@@ -1,6 +1,6 @@
 # Roommate-Swiper
 
-CS 321 roommate matching application. The backend implements Milestone 1 (verified accounts, profiles and photo uploads) and your Milestone 2 portion (questionnaire, saved answers and dealbreakers). Compatibility logic remains your partner's portion.
+CS 321 roommate matching application. The backend implements Milestone 1 (verified accounts, profiles and photo uploads) and your Milestone 2 portion (questionnaire, saved answers and nonNegotiables). Compatibility logic remains your partner's portion.
 
 The frontend is a **React web application**, developed separately. The backend uses JavaScript, Node.js + Express, and Supabase PostgreSQL/Auth/Storage. Browser origin examples use `http://localhost:5173`; change them to the React team's actual origin if different. No frontend build tool is required by the backend.
 
