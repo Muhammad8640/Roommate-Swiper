@@ -31,7 +31,7 @@ Current local work also includes your Milestone 2 portion: questionnaire, saved 
 
 The six initial scenarios cover cleanliness, sleep, noise, guests, smoking/vaping and shared belongings. Each has ordered answers 0..3 with equal weights; similarity is `1 - abs(a-b)/3`, and the score is the rounded average similarity times 100. NonNegotiables exclude candidates reciprocally before scoring/ranking. Both likes create one mutual match. Structured email/phone remain private until an authorized mutual match. Blocking prevents interactions and contact access; reports support manual review.
 
-In-app messaging, push transport, deployment and an administrative UI are outside this milestone. Contact sharing after mutual matching is the planned connection mechanism for the MVP.
+In-app messaging is also planned in P3 and remains future work alongside authorized contact sharing. Messaging, push transport, deployment and an administrative UI are outside the current milestone.
 
 ## Database scope
 

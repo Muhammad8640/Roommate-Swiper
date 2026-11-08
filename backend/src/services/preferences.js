@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { HttpError } from '../errors.js';
+import { HttpError, validate } from '../errors.js';
 import { QUESTION_IDS, QUESTIONNAIRE_VERSION } from '../questionnaire.js';
 
 const answer = z.number().int().min(0).max(3);
@@ -15,14 +15,6 @@ const patchSchema = z.strictObject({
   nonNegotiables: nonNegotiables.optional()
 }).refine(value => value.scenarioAnswers !== undefined || value.nonNegotiables !== undefined, 'Submit answers or nonNegotiables');
 
-function validate(schema, body) {
-  const result = schema.safeParse(body);
-  if (!result.success) throw new HttpError(400, 'VALIDATION_ERROR', 'Check the submitted preferences.', {
-    fields: result.error.issues.map(issue => ({ path: issue.path.join('.'), message: issue.message }))
-  });
-  return result.data;
-}
-
 export function preferencesService(repository, profiles) {
   const ownedProfile = (identity, operation) => profiles.owned(identity.id, async client => {
     if (!await profiles.read(client, identity.id)) throw new HttpError(409, 'PROFILE_REQUIRED', 'Save your profile before preferences.');
@@ -37,7 +29,7 @@ export function preferencesService(repository, profiles) {
       });
     },
     save(identity, body, patch = false) {
-      const submitted = validate(patch ? patchSchema : full, body);
+      const submitted = validate(patch ? patchSchema : full, body, 'Check the submitted preferences.');
       return ownedProfile(identity, async client => {
         let values = submitted;
         if (patch) {
@@ -48,7 +40,7 @@ export function preferencesService(repository, profiles) {
             scenarioAnswers: { ...current.scenarioAnswers, ...submitted.scenarioAnswers },
             // PATCH replaces this entire map when supplied. {} clears restrictions.
             nonNegotiables: submitted.nonNegotiables ?? current.nonNegotiables
-          });
+          }, 'Check the submitted preferences.');
         }
         await repository.write(client, identity.id, values);
         return { ...await repository.read(client, identity.id), complete: true };

@@ -116,7 +116,7 @@ questionnaire, PUT the example, GET the saved preferences, PATCH one answer and
 GET again. Each student's data is isolated. Demo data resets on process exit.
 
 For a real development database, run `npm.cmd run migrate` using the existing
-owner-only `MIGRATION_DATABASE_URL` before starting the normal server. Numbered
+`DATABASE_URL` (or optional owner `MIGRATION_DATABASE_URL`) before starting the normal server. Numbered
 migrations now run in order. Migration 001 stays unchanged; 002 adds preferences
 without losing profile data. Migration 003 adds `non_negotiables` and converts old
 acceptable-answer `dealbreakers` to forbidden-answer complements, then removes

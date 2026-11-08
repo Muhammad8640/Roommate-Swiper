@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import sharp from 'sharp';
-import { HttpError } from '../errors.js';
+import { HttpError, validate } from '../errors.js';
 
 const fields = z.strictObject({
   displayName: z.string().trim().min(1).max(80),
@@ -46,14 +46,11 @@ export function profilesService(repository, storage, logger) {
       });
     },
     async save(identity, body, patch = false) {
-      const parsed = (patch ? partial : full).safeParse(body);
-      if (!parsed.success) throw new HttpError(400, 'VALIDATION_ERROR', 'Check the submitted profile fields.', {
-        fields: parsed.error.issues.map(issue => ({ path: issue.path.join('.'), message: issue.message }))
-      });
+      const values = validate(patch ? partial : full, body, 'Check the submitted profile fields.');
       return repository.owned(identity.id, async client => {
         const existing = await repository.read(client, identity.id);
         if (patch && !existing) throw new HttpError(404, 'NOT_FOUND', 'Create your profile before editing it.');
-        await repository.write(client, identity.id, patch ? { ...existing, ...parsed.data } : parsed.data);
+        await repository.write(client, identity.id, patch ? { ...existing, ...values } : values);
         return present(client, identity, await repository.read(client, identity.id));
       });
     },

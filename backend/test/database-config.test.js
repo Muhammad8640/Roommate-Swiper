@@ -1,7 +1,7 @@
 import { before, after, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { configuration } from '../src/config.js';
-import { databasePool } from '../src/database.js';
+import { databasePool, setupDatabasePool } from '../src/database.js';
 import { migrate } from '../scripts/migration.js';
 import { localDatabase, studentId, schoolId } from '../scripts/local-fixtures.js';
 
@@ -47,6 +47,20 @@ describe('Current-feature database', () => {
 
 describe('Environment handling', () => {
   const valid = { SUPABASE_URL: 'https://example.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'test-public', SUPABASE_SECRET_KEY: 'test-secret', DATABASE_URL: 'postgresql://test:password@localhost/postgres' };
+  it('supports one database URL for setup and an optional separate owner connection without connecting', async () => {
+    const single = setupDatabasePool(valid);
+    const ownerUrl = 'postgresql://owner:password@localhost/postgres';
+    const separate = setupDatabasePool({ ...valid, MIGRATION_DATABASE_URL: ownerUrl });
+    try {
+      assert.equal(single.options.connectionString, valid.DATABASE_URL);
+      assert.equal(separate.options.connectionString, ownerUrl);
+      assert.throws(() => setupDatabasePool({}), /DATABASE_URL is missing/);
+      assert.throws(() => setupDatabasePool({ ...valid, DB_SSL: 'yes' }), /Invalid TLS/);
+    } finally {
+      await single.end();
+      await separate.end();
+    }
+  });
   it('reports missing or invalid field names without printing values', () => {
     assert.throws(() => configuration({}), /SUPABASE_URL/);
     assert.throws(() => configuration({ ...valid, PORT: 'private-invalid-value' }), error => error.message.includes('PORT') && !error.message.includes('private-invalid-value'));

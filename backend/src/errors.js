@@ -5,6 +5,15 @@ export class HttpError extends Error {
   }
 }
 
+// Profile and preference forms use the same validation error format.
+export function validate(schema, body, message) {
+  const result = schema.safeParse(body);
+  if (!result.success) throw new HttpError(400, 'VALIDATION_ERROR', message, {
+    fields: result.error.issues.map(issue => ({ path: issue.path.join('.'), message: issue.message }))
+  });
+  return result.data;
+}
+
 export function handleErrors(logger) {
   return (error, request, response, next) => {
     if (response.headersSent) return next(error);
