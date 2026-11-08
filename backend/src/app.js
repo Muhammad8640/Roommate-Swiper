@@ -9,6 +9,8 @@ import { profilesRepository } from './repositories/profiles.js';
 import { identityService } from './services/identity.js';
 import { profilesService } from './services/profiles.js';
 import { routes } from './routes.js';
+import { preferencesRepository } from './repositories/preferences.js';
+import { preferencesService } from './services/preferences.js';
 
 export function createApp({ pool, auth, storage, origins = [], requestLimit = 120, logger = console }) {
   const app = express();
@@ -32,7 +34,9 @@ export function createApp({ pool, auth, storage, origins = [], requestLimit = 12
   }));
   app.use(express.json({ limit: '32kb' }));
   const accounts = accountsRepository(pool);
-  app.use('/api/v1', routes(identityService(auth, accounts), accounts, profilesService(profilesRepository(pool), storage, logger)));
+  const profiles = profilesRepository(pool);
+  app.use('/api/v1', routes(identityService(auth, accounts), accounts,
+    profilesService(profiles, storage, logger), preferencesService(preferencesRepository(), profiles)));
   app.use((request, response, next) => next(new HttpError(404, 'NOT_FOUND', 'The requested resource was not found.')));
   app.use(handleErrors(logger));
   return app;

@@ -17,6 +17,8 @@ For each milestone: implement only necessary schema/API/services, run relevant t
 
 ## Milestone 1 decisions
 
+Current local work also includes your Milestone 2 portion: questionnaire, saved answers/dealbreakers, migration and API tests/documentation. Your partner's scoring and reciprocal comparison remain outstanding. See [preferences.md](preferences.md). Completing this portion does not mark all of Milestone 2 complete.
+
 - Supabase handles registration, passwords, confirmation emails, login/logout, recovery and refresh. No duplicate password database or Express login facade.
 - Exact school-domain allowlist, verified current email and active account required before any profile operation.
 - Own-profile fields: display name, bio, major, class year, interests and photos. Questionnaire-derived living habits/preferences arrive in Milestone 2.
@@ -33,4 +35,4 @@ In-app messaging, push transport, deployment and an administrative UI are outsid
 
 ## Database scope
 
-Milestone 1 creates only schools, school domains, accounts, profiles and photos, plus migration history, in private schema `roommate`. Add later tables and business logic with their corresponding feature milestone. Do not modify an already-applied migration; create a new migration for schema changes.
+Migration 001 creates schools, school domains, accounts, profiles and photos, plus migration history. Migration 002 adds preferences in private schema `roommate`. Other feature tables remain deferred. Do not modify an already-applied migration; create a new migration for schema changes.

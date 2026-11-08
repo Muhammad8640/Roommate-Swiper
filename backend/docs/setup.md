@@ -43,7 +43,7 @@ Remove `sslmode`, `sslcert`, `sslkey` and `sslrootcert` URL query parameters: th
 npm.cmd run migrate
 ```
 
-The script expects the existing Supabase `auth.users` table. It creates private `roommate` schema, the five feature tables, migration history and a NOLOGIN permission role `roommate_runtime`. Transactions, a migration lock and a checksum make unchanged re-runs safe. Changed applied migrations are rejected; no automatic drop/reset occurs. Use a later migration for later features.
+The script expects the existing Supabase `auth.users` table. It applies numbered migrations in order: 001 creates the private schema, five account/profile tables and `roommate_runtime` role; 002 adds preferences and SQL validation. Migration history, a transaction lock and checksums make re-runs safe. Changed applied migrations are rejected; no automatic drop/reset occurs. Existing profiles are preserved. Run migrations again when adopting preferences APIs; server startup does not apply them.
 
 The migration creates only the `roommate` application schema and its tables. It does not migrate existing data from other schemas or automatically reset a database.
 

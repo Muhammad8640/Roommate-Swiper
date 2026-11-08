@@ -9,16 +9,16 @@ describe('Current-feature database', () => {
   let database;
   before(async () => { database = await localDatabase(); });
   after(async () => { await database?.db.close(); });
-  it('contains only identity/profile tables and migration tracking', async () => {
+  it('contains only accounts, profiles, preferences and migration tracking', async () => {
     const result = await database.db.query("SELECT tablename FROM pg_tables WHERE schemaname = 'roommate' ORDER BY tablename");
-    assert.deepEqual(result.rows.map(row => row.tablename), ['accounts', 'migrations', 'photos', 'profiles', 'school_domains', 'schools']);
+    assert.deepEqual(result.rows.map(row => row.tablename), ['accounts', 'migrations', 'photos', 'preferences', 'profiles', 'school_domains', 'schools']);
   });
   it('is repeatable and refuses a modified applied migration without losing data', async () => {
     assert.equal(await migrate(database.pool), false);
-    const original = (await database.db.query('SELECT checksum FROM roommate.migrations')).rows[0].checksum;
-    await database.db.query("UPDATE roommate.migrations SET checksum = 'changed'");
+    const original = (await database.db.query("SELECT checksum FROM roommate.migrations WHERE name = '001_accounts_profiles.sql'")).rows[0].checksum;
+    await database.db.query("UPDATE roommate.migrations SET checksum = 'changed' WHERE name = '001_accounts_profiles.sql'");
     try { await assert.rejects(migrate(database.pool), /applied migration has changed/); }
-    finally { await database.db.query('UPDATE roommate.migrations SET checksum = $1', [original]); }
+    finally { await database.db.query("UPDATE roommate.migrations SET checksum = $1 WHERE name = '001_accounts_profiles.sql'", [original]); }
     assert.equal((await database.db.query('SELECT count(*)::int AS count FROM roommate.schools')).rows[0].count, 1);
   });
   it('requires real Auth IDs and unique normalized school domains', async () => {

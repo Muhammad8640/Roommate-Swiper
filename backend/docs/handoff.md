@@ -1,5 +1,7 @@
 # Milestone 1 handoff
 
+This is the historical Milestone 1 handoff. For the subsequently added Milestone 2 preferences/API portion and current checks, see [preferences.md](preferences.md). Compatibility remains your partner's portion.
+
 ## Result
 
 The backend implements the first complete feature: verified accounts, own-profile creation/reading/editing, photo upload/view/delete and profile completion. The HTTP prototype runs locally and can be demonstrated without external credentials.

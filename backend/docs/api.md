@@ -1,8 +1,10 @@
-# Milestone 1 API contract
+# Accounts, profiles and preferences API contract
 
 Base URL for the normal local server: `http://127.0.0.1:3000/api/v1`. Offline demo: `http://127.0.0.1:3001/api/v1`. [OpenAPI](openapi.yaml) describes every implemented method, input, response and common error for import into Postman or tooling.
 
 ## Authentication and registration
+
+For the setup, frontend handoff and real-project acceptance test, see [school email and password login](password-login.md). No username is required.
 
 As specified by the original PRD, the frontend/integration team uses Supabase Auth directly for registration, confirmation, login, logout, password recovery and session refresh. There are no Express signup/login/password endpoints. Supabase stores and verifies passwords; the backend never persists them.
 
@@ -37,8 +39,12 @@ React uses the Supabase browser SDK for sessions and sends `Authorization: Beare
 | PATCH | `/me/profile` | Verified school account | Update selected fields of existing profile |
 | POST | `/me/photos` | Verified school account | Upload one photo to a saved profile |
 | DELETE | `/me/photos/{photoId}` | Verified school account | Delete only an owned photo |
+| GET | `/questionnaire` | Verified school account | Six versioned prompts and option labels |
+| GET | `/me/preferences` | Verified school account | Read own saved answers/dealbreakers |
+| PUT | `/me/preferences` | Verified school account | Create or replace complete preferences after saving profile |
+| PATCH | `/me/preferences` | Verified school account | Merge selected answers or replace dealbreaker map |
 
-Only these routes are implemented. Preferences, questionnaires, discovery, swipes, matches, contact sharing, blocks and reports are future milestones; their paths currently return 404. There is no arbitrary-user profile endpoint in this feature.
+See [preferences.md](preferences.md) for versioned fields, PATCH behavior, demo steps and the compatibility partner's input contract. Scoring, reciprocal filtering, discovery, swipes, matches, contact sharing, blocks and reports are not implemented. There is no arbitrary-user profile or preferences endpoint.
 
 ## Account and completion response
 
