@@ -15,7 +15,7 @@ import {
 const API_BASE =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
 
-export default function ProfileManager({ token }) {
+export default function ProfileManager({ token, onProfileSaved }) {
   const [formData, setFormData] = useState({
     displayName: '',
     bio: '',
@@ -182,6 +182,14 @@ export default function ProfileManager({ token }) {
       }
 
       setSuccessMsg('Profile saved successfully!');
+
+      // Smooth transition over to the Matches view after saving
+      setTimeout(() => {
+        if (onProfileSaved) {
+          onProfileSaved();
+        }
+      }, 700);
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -577,7 +585,7 @@ export default function ProfileManager({ token }) {
             }}
           >
             {saving && <Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />}
-            Save Profile
+            Save & Continue to Matches
           </button>
         </form>
       </div>

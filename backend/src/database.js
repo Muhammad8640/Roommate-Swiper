@@ -1,4 +1,5 @@
 import pg from 'pg';
+import { readFileSync } from 'node:fs';
 
 export function databasePool(connectionString, ssl = true) {
   const parsed = new URL(connectionString);
@@ -6,7 +7,10 @@ export function databasePool(connectionString, ssl = true) {
     throw new Error('Use DB_SSL and a trusted CA instead of SSL query parameters in the database URL');
   }
   return new pg.Pool({
-    connectionString, ssl: ssl ? { rejectUnauthorized: true } : false,
+    connectionString, ssl: ssl ? {
+      rejectUnauthorized: true,
+      ...(process.env.DB_SSL_CA_FILE ? { ca: readFileSync(process.env.DB_SSL_CA_FILE, 'utf8') } : {})
+    } : false,
     max: 5, connectionTimeoutMillis: 5000, idleTimeoutMillis: 30000, statement_timeout: 5000
   });
 }

@@ -34,7 +34,8 @@ The React app receives only the project URL and publishable key. Never commit
 
 URL-encode special characters in the database password. Keep TLS certificate
 verification enabled. Remove SSL query parameters from the URL; `DB_SSL` controls
-TLS. If a trusted CA is needed, configure `NODE_EXTRA_CA_CERTS`.
+TLS. If a trusted CA is needed, place the Supabase certificate in `backend/certs/`
+and set `DB_SSL_CA_FILE=./certs/prod-ca-2021.crt` in `.env`.
 
 ## 2. Configure Supabase Auth
 
