@@ -183,7 +183,7 @@ export default function ProfileManager({ token, onProfileSaved }) {
 
       setSuccessMsg('Profile saved successfully!');
 
-      // Smooth transition over to the Matches view after saving
+      // Smooth transition over to the Preferences view after saving
       setTimeout(() => {
         if (onProfileSaved) {
           onProfileSaved();
@@ -585,7 +585,7 @@ export default function ProfileManager({ token, onProfileSaved }) {
             }}
           >
             {saving && <Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />}
-            Save & Continue to Matches
+            Save & Continue to Preferences
           </button>
         </form>
       </div>
