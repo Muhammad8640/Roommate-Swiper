@@ -1,4 +1,3 @@
-import { transaction } from '../database.js';
 import { HttpError } from '../errors.js';
 
 export function accountsRepository(pool) {
@@ -20,14 +19,16 @@ export function accountsRepository(pool) {
       return result.rows[0];
     },
     async identify(id, schoolId) {
-      return transaction(pool, async client => {
-        await client.query('INSERT INTO roommate.accounts (id, school_id) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING', [id, schoolId]);
-        const result = await client.query('SELECT id, school_id, status FROM roommate.accounts WHERE id = $1 FOR UPDATE', [id]);
-        const account = result.rows[0];
-        if (account.status !== 'active') throw new HttpError(403, 'ACCOUNT_INACTIVE', 'This account is not active.');
-        if (account.school_id !== schoolId) await client.query('UPDATE roommate.accounts SET school_id = $2 WHERE id = $1', [id, schoolId]);
-        return { id, status: account.status };
-      });
+      // One atomic query creates the account or updates its school.
+      // Suspended accounts cannot be updated or reactivated by signing in.
+      const result = await pool.query(`
+        INSERT INTO roommate.accounts (id, school_id) VALUES ($1, $2)
+        ON CONFLICT (id) DO UPDATE SET school_id = EXCLUDED.school_id
+        WHERE roommate.accounts.status = 'active'
+        RETURNING id, status
+      `, [id, schoolId]);
+      if (!result.rows[0]) throw new HttpError(403, 'ACCOUNT_INACTIVE', 'This account is not active.');
+      return result.rows[0];
     },
     async completion(id) {
       const result = await pool.query(`

@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: Roommate Swiper - Accounts and Profiles
-  version: 0.1.0
+  title: Roommate Swiper - Accounts, Profiles and Preferences
+  version: 0.3.0
   description: |
-    Fresh backend, feature milestone 1. Registration, confirmation, login, logout,
+    Milestone 1 and the preferences/API portion of Milestone 2. Registration, confirmation, login, logout,
     recovery and session refresh use Supabase Auth directly. Application data and
     file operations use this API. Every protected operation requires an active
     account with a current confirmed email from an enabled supported school.
@@ -16,6 +16,52 @@ servers:
 security:
   - bearerAuth: []
 paths:
+  /questionnaire:
+    get:
+      operationId: getQuestionnaire
+      summary: Six versioned scenarios and answer labels for verified students
+      responses:
+        '200':
+          description: Version 1 questionnaire; no profile or photo is required to read the catalog
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/Questionnaire'}
+        default: {$ref: '#/components/responses/Error'}
+  /me/preferences:
+    get:
+      operationId: getOwnPreferences
+      summary: Read the signed-in student's saved answers and nonNegotiables
+      responses:
+        '200': {$ref: '#/components/responses/Preferences'}
+        default: {$ref: '#/components/responses/Error'}
+    put:
+      operationId: replaceOwnPreferences
+      summary: Create or replace complete preferences after saving a profile
+      description: All six answers, questionnaireVersion 1, and nonNegotiables are required. Send an empty nonNegotiables object for no restrictions. A photo is not required to save preferences.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/PreferencesInput'}
+      responses:
+        '200': {$ref: '#/components/responses/Preferences'}
+        default: {$ref: '#/components/responses/Error'}
+    patch:
+      operationId: patchOwnPreferences
+      summary: Edit saved answers or replace the non-negotiable map
+      description: Preferences must already exist. Supplied scenarioAnswers merge by question ID. A supplied nonNegotiables object replaces the entire saved map; an empty object clears all restrictions. Version alone is not an edit. Updates are serialized per account to preserve concurrent edits.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/PreferencesPatch'}
+      responses:
+        '200': {$ref: '#/components/responses/Preferences'}
+        default: {$ref: '#/components/responses/Error'}
   /health:
     get:
       operationId: health
@@ -180,6 +226,15 @@ components:
       bearerFormat: Supabase access token
       description: Demo accepts demo-student or demo-second only in the separate demo process
   responses:
+    Preferences:
+      description: Saved complete preferences owned by this authenticated student
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data]
+            properties:
+              data: {$ref: '#/components/schemas/Preferences'}
     Error:
       description: |
         400 invalid JSON/fields/photo UUID/multipart; 401 missing or invalid token;
@@ -213,6 +268,110 @@ components:
             properties:
               data: {$ref: '#/components/schemas/Profile'}
   schemas:
+    Questionnaire:
+      type: object
+      required: [version, questions, nonNegotiableChoices]
+      properties:
+        version: {type: integer, enum: [1]}
+        nonNegotiableChoices:
+          type: array
+          minItems: 24
+          maxItems: 24
+          description: Fixed checkbox catalog; custom user-written choices are not accepted. Group selected values by questionId in nonNegotiables.
+          items:
+            type: object
+            additionalProperties: false
+            required: [questionId, value, label]
+            properties:
+              questionId: {type: string, enum: [cleanliness, sleep, noise, guests, smoking, sharing]}
+              value: {type: integer, minimum: 0, maximum: 3}
+              label: {type: string}
+        questions:
+          type: array
+          minItems: 6
+          maxItems: 6
+          items:
+            type: object
+            required: [id, prompt, options]
+            properties:
+              id: {type: string, enum: [cleanliness, sleep, noise, guests, smoking, sharing]}
+              prompt: {type: string}
+              options:
+                type: array
+                minItems: 4
+                maxItems: 4
+                items:
+                  type: object
+                  required: [value, label]
+                  properties:
+                    value: {type: integer, minimum: 0, maximum: 3}
+                    label: {type: string}
+    Answers:
+      type: object
+      additionalProperties: false
+      required: [cleanliness, sleep, noise, guests, smoking, sharing]
+      properties: &answerFields
+        cleanliness: {type: integer, minimum: 0, maximum: 3}
+        sleep: {type: integer, minimum: 0, maximum: 3}
+        noise: {type: integer, minimum: 0, maximum: 3}
+        guests: {type: integer, minimum: 0, maximum: 3}
+        smoking: {type: integer, minimum: 0, maximum: 3}
+        sharing: {type: integer, minimum: 0, maximum: 3}
+    AnswerPatch:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties: *answerFields
+    RejectedAnswers:
+      type: array
+      minItems: 1
+      maxItems: 4
+      uniqueItems: true
+      items: {type: integer, minimum: 0, maximum: 3}
+    NonNegotiables:
+      type: object
+      additionalProperties: false
+      description: Forbidden candidate answers; any match triggers rejection before scoring. Omitted questions impose no restriction; an empty object means none. Returned arrays are sorted. The comparison algorithm is implemented separately by the compatibility partner.
+      properties:
+        cleanliness: {$ref: '#/components/schemas/RejectedAnswers'}
+        sleep: {$ref: '#/components/schemas/RejectedAnswers'}
+        noise: {$ref: '#/components/schemas/RejectedAnswers'}
+        guests: {$ref: '#/components/schemas/RejectedAnswers'}
+        smoking: {$ref: '#/components/schemas/RejectedAnswers'}
+        sharing: {$ref: '#/components/schemas/RejectedAnswers'}
+    PreferencesInput:
+      type: object
+      additionalProperties: false
+      required: [questionnaireVersion, scenarioAnswers, nonNegotiables]
+      properties:
+        questionnaireVersion: {type: integer, enum: [1]}
+        scenarioAnswers:
+          allOf: [{$ref: '#/components/schemas/Answers'}]
+          description: Six questionnaire preference answers used for compatibility scoring after non-negotiable filtering
+        nonNegotiables: {$ref: '#/components/schemas/NonNegotiables'}
+    PreferencesPatch:
+      type: object
+      additionalProperties: false
+      anyOf:
+        - required: [scenarioAnswers]
+        - required: [nonNegotiables]
+      properties:
+        questionnaireVersion: {type: integer, enum: [1]}
+        scenarioAnswers: {$ref: '#/components/schemas/AnswerPatch'}
+        nonNegotiables: {$ref: '#/components/schemas/NonNegotiables'}
+    Preferences:
+      type: object
+      additionalProperties: false
+      required: [userId, questionnaireVersion, scenarioAnswers, nonNegotiables, complete, updatedAt]
+      properties:
+        questionnaireVersion: {type: integer, enum: [1]}
+        scenarioAnswers:
+          allOf: [{$ref: '#/components/schemas/Answers'}]
+          description: Six questionnaire preference answers used for compatibility scoring after non-negotiable filtering
+        nonNegotiables: {$ref: '#/components/schemas/NonNegotiables'}
+        userId: {type: string, format: uuid}
+        complete: {type: boolean, enum: [true], description: All six answers are saved; not discovery readiness or profile/photo completion}
+        updatedAt: {type: string, format: date-time}
     School:
       type: object
       required: [id, name]

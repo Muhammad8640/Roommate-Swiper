@@ -1,6 +1,6 @@
 # Roommate-Swiper
 
-CS 321 roommate matching application. The backend currently implements Milestone 1: verified accounts, profiles, and photo uploads.
+CS 321 roommate matching application. The backend implements Milestone 1 (verified accounts, profiles and photo uploads) and your Milestone 2 portion (questionnaire, saved answers and nonNegotiables). Compatibility logic remains your partner's portion.
 
 The frontend is a **React web application**, developed separately. The backend uses JavaScript, Node.js + Express, and Supabase PostgreSQL/Auth/Storage. Browser origin examples use `http://localhost:5173`; change them to the React team's actual origin if different. No frontend build tool is required by the backend.
 
@@ -27,4 +27,4 @@ npm.cmd run api:check
 
 Milestone 1 covers verified accounts, own-profile creation/reading/editing and up to three private photos, with only one required. Registration/login/session management use Supabase Auth directly, as in the original PRD. Express verifies identity and enforces all application-data access.
 
-Later milestones add preferences/scoring, discovery/swiping, then matches/contact sharing/safety. Their endpoints, services and database tables are not implemented here. Development remains local until the real Supabase integration and deployment configuration are verified.
+See [Milestone 2 preferences and partner handoff](backend/docs/preferences.md) for new endpoints and configuration. Scoring, discovery/swiping and matching/safety logic are not implemented. Development remains local until real Supabase integration is verified.

@@ -43,6 +43,17 @@ try {
   await call('/me', {}, 403, 'demo-unverified');
   await call('/me/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ displayName: 'Demo Student', major: 'Computer Science' }) });
   assert.equal((await call('/me')).data.onboarding.complete, false);
+  const questionnaire = (await call('/questionnaire')).data;
+  assert.equal(questionnaire.questions.length, 6);
+  const preferences = { questionnaireVersion: questionnaire.version,
+    scenarioAnswers: Object.fromEntries(questionnaire.questions.map(q => [q.id, 0])),
+    nonNegotiables: { smoking: [3] } };
+  await call('/me/preferences', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(preferences) });
+  assert.deepEqual((await call('/me/preferences')).data.scenarioAnswers, preferences.scenarioAnswers);
+  await call('/me/preferences', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scenarioAnswers: { sleep: 3 } }) });
+  assert.equal((await call('/me/preferences')).data.scenarioAnswers.sleep, 3);
+  await call('/me/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ displayName: 'Second Student' }) }, 200, 'demo-second');
+  await call('/me/preferences', {}, 404, 'demo-second');
   const image = await sharp({ create: { width: 40, height: 30, channels: 3, background: '#224466' } }).png().toBuffer();
   const form = new FormData();
   form.append('photo', new Blob([image], { type: 'image/png' }), 'demo.png');
@@ -55,7 +66,7 @@ try {
   assert.equal((await call('/me/profile')).data.bio, 'Edited successfully');
   await call(`/me/photos/${photo.id}`, { method: 'DELETE' }, 204);
   assert.equal((await call('/me')).data.onboarding.complete, false);
-  console.log('Demo check passed: React browser CORS preflight, authentication gates, profile create/read/edit, photo upload/view/delete and completion state.');
+  console.log('Demo check passed: browser CORS, authentication, profiles/photos, questionnaire, preferences create/read/edit and student isolation.');
 } finally {
   clearTimeout(timeout);
   if (child.exitCode === null && child.signalCode === null) {

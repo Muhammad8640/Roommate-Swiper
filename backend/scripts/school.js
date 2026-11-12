@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
 import { z } from 'zod';
-import { databasePool, transaction } from '../src/database.js';
+import { setupDatabasePool, transaction } from '../src/database.js';
 
 let pool;
 try {
@@ -12,9 +12,7 @@ try {
     domain: z.array(z.string().toLowerCase().max(253).regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/)).min(1),
     id: z.uuid().optional()
   }).parse(values);
-  if (!process.env.MIGRATION_DATABASE_URL) throw new Error('Owner connection is missing');
-  if (!['true', 'false'].includes(process.env.DB_SSL ?? 'true')) throw new Error('Invalid TLS configuration');
-  pool = databasePool(process.env.MIGRATION_DATABASE_URL, process.env.DB_SSL !== 'false');
+  pool = setupDatabasePool();
   const schoolId = await transaction(pool, async client => {
     const result = await client.query(`
       INSERT INTO roommate.schools (id, name) VALUES (COALESCE($1::uuid, gen_random_uuid()), $2)

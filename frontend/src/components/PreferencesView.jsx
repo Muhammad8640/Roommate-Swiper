@@ -3,27 +3,8 @@ import { Sliders, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
 
-// Version 1 shared contract
-const scenarios = [
-  ['cleanliness', 'A shared counter is messy after dinner. When would you clean it?', ['Immediately', 'By the end of the day', 'Within a few days', 'During the weekly cleanup']],
-  ['sleep', 'On a typical class night, when do you settle down to sleep?', ['Before 10 pm', 'Between 10 pm and midnight', 'Between midnight and 2 am', 'After 2 am']],
-  ['noise', 'Your roommate is studying in the room. What sound level fits your usual routine?', ['Keep the room silent', 'Use headphones and keep conversation brief', 'Play quiet background audio', 'Continue normal music and conversation']],
-  ['guests', 'How often would you normally invite guests into the shared room?', ['Never', 'About once a month', 'About once a week', 'Most days']],
-  ['smoking', 'Which smoking or vaping routine describes you?', ['I do neither', 'Occasionally, outside only', 'Frequently, outside only', 'I would smoke or vape indoors']],
-  ['sharing', 'Your roommate wants to use your belongings. What arrangement works for you?', ['Keep belongings separate', 'Ask permission each time', 'Share agreed everyday supplies', 'Share most everyday belongings freely']]
-];
-
-const QUESTIONNAIRE_VERSION = 1;
-const questionnaire = {
-  version: QUESTIONNAIRE_VERSION,
-  questions: scenarios.map(([id, prompt, options]) => ({
-    id,
-    prompt,
-    options: options.map((label, value) => ({ value, label }))
-  }))
-};
-
 export default function PreferencesView({ token, onPreferencesSaved }) {
+  const [questionnaire, setQuestionnaire] = useState(null);
   const [answers, setAnswers] = useState({});
   const [nonNegotiables, setNonNegotiables] = useState({});
   const [loading, setLoading] = useState(true);
@@ -31,49 +12,39 @@ export default function PreferencesView({ token, onPreferencesSaved }) {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  // Load existing preferences if available, otherwise default to index 0
+  // Load the server catalog and saved answers before allowing edits.
   useEffect(() => {
     async function fetchPreferences() {
-      const initialAnswers = {};
-      questionnaire.questions.forEach((q) => {
-        initialAnswers[q.id] = 0;
-      });
-
+      setLoading(true);
+      setError(null);
       try {
-        const res = await fetch(`${API_BASE}/me/preferences`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (res.ok) {
-          const json = await res.json();
-          if (json.data?.answers) {
-            setAnswers({ ...initialAnswers, ...json.data.answers });
-          } else {
-            setAnswers(initialAnswers);
-          }
-
-          if (Array.isArray(json.data?.nonNegotiableChoices)) {
-            const loadedNonNeg = {};
-            json.data.nonNegotiableChoices.forEach(({ questionId, value }) => {
-              loadedNonNeg[`${questionId}-${value}`] = true;
-            });
-            setNonNegotiables(loadedNonNeg);
-          }
-        } else {
-          setAnswers(initialAnswers);
+        const headers = { Authorization: `Bearer ${token}` };
+        const catalogResponse = await fetch(`${API_BASE}/questionnaire`, { headers });
+        const catalogJson = await catalogResponse.json();
+        if (!catalogResponse.ok) throw new Error(catalogJson.error?.message || 'Could not load questions.');
+        const catalog = catalogJson.data;
+        const initialAnswers = Object.fromEntries(catalog.questions.map(q => [q.id, 0]));
+        const res = await fetch(`${API_BASE}/me/preferences`, { headers });
+        const json = await res.json();
+        if (!res.ok && res.status !== 404) throw new Error(json.error?.message || 'Could not load preferences.');
+        const saved = res.ok ? json.data : null;
+        if (saved && saved.questionnaireVersion !== catalog.version) throw new Error('Saved questionnaire version is unsupported.');
+        setAnswers(saved?.scenarioAnswers || initialAnswers);
+        const selected = {};
+        for (const [questionId, values] of Object.entries(saved?.nonNegotiables || {})) {
+          for (const value of values) selected[`${questionId}-${value}`] = true;
         }
-      } catch {
-        setAnswers(initialAnswers);
+        setNonNegotiables(selected);
+        setQuestionnaire(catalog);
+      } catch (err) {
+        setQuestionnaire(null);
+        setError(err.message || 'Could not load preferences.');
       } finally {
         setLoading(false);
       }
     }
-
-    if (token) {
-      fetchPreferences();
-    } else {
-      setLoading(false);
-    }
+    if (token) fetchPreferences();
+    else setLoading(false);
   }, [token]);
 
   const handleOptionChange = (questionId, value) => {
@@ -98,13 +69,15 @@ export default function PreferencesView({ token, onPreferencesSaved }) {
     setSaving(true);
     setError(null);
 
+    const restrictions = {};
+    for (const key of Object.keys(nonNegotiables)) {
+      const [questionId, valueStr] = key.split('-');
+      (restrictions[questionId] ||= []).push(Number(valueStr));
+    }
     const payload = {
-      version: questionnaire.version,
-      answers,
-      nonNegotiableChoices: Object.keys(nonNegotiables).map((key) => {
-        const [questionId, valueStr] = key.split('-');
-        return { questionId, value: parseInt(valueStr, 10) };
-      }),
+      questionnaireVersion: questionnaire.version,
+      scenarioAnswers: answers,
+      nonNegotiables: restrictions,
     };
 
     try {
@@ -143,6 +116,8 @@ export default function PreferencesView({ token, onPreferencesSaved }) {
     );
   }
 
+  if (!questionnaire) return <p role="alert">{error || 'Sign in to load preferences.'}</p>;
+
   return (
     <div style={{ maxWidth: '700px', margin: '40px auto', padding: '32px', background: 'var(--bg)', borderRadius: '16px', border: '1px solid var(--border)', boxSizing: 'border-box', textAlign: 'left' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
@@ -150,7 +125,7 @@ export default function PreferencesView({ token, onPreferencesSaved }) {
         <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800' }}>Roommate Preferences</h2>
       </div>
       <p style={{ color: 'var(--text)', fontSize: '14px', marginBottom: '24px' }}>
-        Configure your daily habits and mark any absolute dealbreakers to calibrate your matching engine.
+        Choose your own habits with the round buttons. Check Dealbreaker for any habit you cannot accept in a roommate.
       </p>
 
       {error && (
@@ -204,7 +179,7 @@ export default function PreferencesView({ token, onPreferencesSaved }) {
                       <span>{opt.label}</span>
                     </label>
 
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text)', cursor: 'pointer', opacity: 0.85, userSelect: 'none' }} title="Mark as non-negotiable dealbreaker">
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text)', cursor: 'pointer', opacity: 0.85, userSelect: 'none' }} title="Reject roommates who choose this answer">
                       <input
                         type="checkbox"
                         checked={isNonNegChecked}

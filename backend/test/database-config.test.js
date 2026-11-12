@@ -1,7 +1,7 @@
 import { before, after, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { configuration } from '../src/config.js';
-import { databasePool } from '../src/database.js';
+import { databasePool, setupDatabasePool } from '../src/database.js';
 import { migrate } from '../scripts/migration.js';
 import { localDatabase, studentId, schoolId } from '../scripts/local-fixtures.js';
 
@@ -9,16 +9,16 @@ describe('Current-feature database', () => {
   let database;
   before(async () => { database = await localDatabase(); });
   after(async () => { await database?.db.close(); });
-  it('contains only identity/profile tables and migration tracking', async () => {
+  it('contains only accounts, profiles, preferences and migration tracking', async () => {
     const result = await database.db.query("SELECT tablename FROM pg_tables WHERE schemaname = 'roommate' ORDER BY tablename");
-    assert.deepEqual(result.rows.map(row => row.tablename), ['accounts', 'migrations', 'photos', 'profiles', 'school_domains', 'schools']);
+    assert.deepEqual(result.rows.map(row => row.tablename), ['accounts', 'migrations', 'photos', 'preferences', 'profiles', 'school_domains', 'schools']);
   });
   it('is repeatable and refuses a modified applied migration without losing data', async () => {
     assert.equal(await migrate(database.pool), false);
-    const original = (await database.db.query('SELECT checksum FROM roommate.migrations')).rows[0].checksum;
-    await database.db.query("UPDATE roommate.migrations SET checksum = 'changed'");
+    const original = (await database.db.query("SELECT checksum FROM roommate.migrations WHERE name = '001_accounts_profiles.sql'")).rows[0].checksum;
+    await database.db.query("UPDATE roommate.migrations SET checksum = 'changed' WHERE name = '001_accounts_profiles.sql'");
     try { await assert.rejects(migrate(database.pool), /applied migration has changed/); }
-    finally { await database.db.query('UPDATE roommate.migrations SET checksum = $1', [original]); }
+    finally { await database.db.query("UPDATE roommate.migrations SET checksum = $1 WHERE name = '001_accounts_profiles.sql'", [original]); }
     assert.equal((await database.db.query('SELECT count(*)::int AS count FROM roommate.schools')).rows[0].count, 1);
   });
   it('requires real Auth IDs and unique normalized school domains', async () => {
@@ -47,6 +47,20 @@ describe('Current-feature database', () => {
 
 describe('Environment handling', () => {
   const valid = { SUPABASE_URL: 'https://example.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'test-public', SUPABASE_SECRET_KEY: 'test-secret', DATABASE_URL: 'postgresql://test:password@localhost/postgres' };
+  it('supports one database URL for setup and an optional separate owner connection without connecting', async () => {
+    const single = setupDatabasePool(valid);
+    const ownerUrl = 'postgresql://owner:password@localhost/postgres';
+    const separate = setupDatabasePool({ ...valid, MIGRATION_DATABASE_URL: ownerUrl });
+    try {
+      assert.equal(single.options.connectionString, valid.DATABASE_URL);
+      assert.equal(separate.options.connectionString, ownerUrl);
+      assert.throws(() => setupDatabasePool({}), /DATABASE_URL is missing/);
+      assert.throws(() => setupDatabasePool({ ...valid, DB_SSL: 'yes' }), /Invalid TLS/);
+    } finally {
+      await single.end();
+      await separate.end();
+    }
+  });
   it('reports missing or invalid field names without printing values', () => {
     assert.throws(() => configuration({}), /SUPABASE_URL/);
     assert.throws(() => configuration({ ...valid, PORT: 'private-invalid-value' }), error => error.message.includes('PORT') && !error.message.includes('private-invalid-value'));

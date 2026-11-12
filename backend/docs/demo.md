@@ -1,4 +1,6 @@
-# Demonstrate Milestone 1
+# Demonstrate accounts, profiles and preferences
+
+The original profile walkthrough below still works. For the Milestone 2 questionnaire and preference-save/edit walkthrough, see [preferences.md](preferences.md). `npm.cmd run demo:check` now checks both features.
 
 ## Start
 

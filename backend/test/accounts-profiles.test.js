@@ -262,7 +262,7 @@ describe('Verified accounts and profile feature', () => {
     assert.equal(rate.body.error.requestId, rate.headers['x-request-id']);
   });
   it('does not implement later milestones', async () => {
-    for (const path of ['/questionnaire', '/discovery', '/matches', '/blocks']) await api('get', path).expect(404);
+    for (const path of ['/compatibility', '/discovery', '/matches', '/blocks']) await api('get', path).expect(404);
     await api('put', `/swipes/${secondId}`).send({ decision: 'like' }).expect(404);
   });
 });
