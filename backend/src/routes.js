@@ -3,9 +3,9 @@ import multer from 'multer';
 import { profilesController } from './controllers/profiles.js';
 import { preferencesController } from './controllers/preferences.js';
 import { questionnaire } from './questionnaire.js';
+import { compatibilityController } from './controllers/compatibility.js';
 
-export function routes(identity, accounts, profiles, preferences) {
-  const router = Router();
+export function routes(identity, accounts, profiles, preferences, compatibility) {  const router = Router();
   const verified = async (request, response, next) => {
     request.identity = await identity.verify(request.get('Authorization'));
     next();
@@ -21,5 +21,6 @@ export function routes(identity, accounts, profiles, preferences) {
   router.delete('/me/photos/:photoId', verified, controller.remove);
   router.get('/questionnaire', verified, (request, response) => response.json({ data: questionnaire }));
   router.route('/me/preferences').all(verified).get(preferenceController.read).put(preferenceController.write).patch(preferenceController.write);
+  router.get('/me/compatibility/:userId', verified, compatibilityController(compatibility).read);
   return router;
 }
