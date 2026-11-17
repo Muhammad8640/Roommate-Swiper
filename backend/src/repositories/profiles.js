@@ -12,19 +12,19 @@ export function profilesRepository(pool) {
     },
     async read(client, id) {
       const result = await client.query(`
-        SELECT user_id AS "userId", display_name AS "displayName", bio, major,
+        SELECT user_id AS "userId", display_name AS "displayName", phone, bio, major,
                class_year AS "classYear", interests FROM roommate.profiles WHERE user_id = $1
       `, [id]);
       return result.rows[0];
     },
     async write(client, id, values) {
       await client.query(`
-        INSERT INTO roommate.profiles (user_id, display_name, bio, major, class_year, interests)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO roommate.profiles (user_id, display_name, bio, major, class_year, interests, phone)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (user_id) DO UPDATE SET display_name = EXCLUDED.display_name,
           bio = EXCLUDED.bio, major = EXCLUDED.major, class_year = EXCLUDED.class_year,
-          interests = EXCLUDED.interests, updated_at = now()
-      `, [id, values.displayName, values.bio, values.major, values.classYear, values.interests]);
+          interests = EXCLUDED.interests, phone = EXCLUDED.phone, updated_at = now()
+      `, [id, values.displayName, values.bio, values.major, values.classYear, values.interests, values.phone]);
     },
     async photos(client, id) {
       const result = await client.query('SELECT id, object_key AS key, position FROM roommate.photos WHERE user_id = $1 ORDER BY position', [id]);

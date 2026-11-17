@@ -5,6 +5,10 @@ import { HttpError, validate } from '../errors.js';
 
 const fields = z.strictObject({
   displayName: z.string().trim().min(1).max(80),
+  phone: z.string().trim().max(25)
+    .regex(/^\+?[0-9(). -]+$/, 'Use digits, spaces, parentheses, hyphens or a leading +')
+    .refine(value => value.replace(/\D/g, '').length >= 10 && value.replace(/\D/g, '').length <= 15,
+      'Use a phone number with 10 to 15 digits').nullable(),
   bio: z.string().trim().max(500),
   major: z.string().trim().min(1).max(100).nullable(),
   classYear: z.number().int().min(2000).max(2100).nullable(),
@@ -12,6 +16,7 @@ const fields = z.strictObject({
     .refine(values => new Set(values.map(value => value.toLowerCase())).size === values.length, 'Interests must be unique')
 });
 const full = fields.extend({
+  phone: fields.shape.phone.default(null),
   bio: fields.shape.bio.default(''), major: fields.shape.major.default(null),
   classYear: fields.shape.classYear.default(null), interests: fields.shape.interests.default([])
 });

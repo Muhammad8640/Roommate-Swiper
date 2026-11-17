@@ -76,18 +76,20 @@ See [preferences.md](preferences.md) for versioned fields, PATCH behavior, demo 
 | Field | Rules | PUT default |
 | --- | --- | --- |
 | `displayName` | Trimmed, nonempty, 1-80 characters | Required |
+| `phone` | String, up to 25 characters, 10-15 digits; spaces, parentheses, hyphens, periods and a leading + allowed; or null | null |
 | `bio` | Trimmed, up to 500 characters | Empty string |
 | `major` | Trimmed, 1-100 characters, or null | null |
 | `classYear` | Integer 2000-2100, or null | null |
 | `interests` | Up to 10 trimmed nonempty strings, 30 characters each; unique ignoring case | Empty array |
 
-Unknown fields, ownership/school IDs, arbitrary photo URLs and contacts are rejected. JSON numbers are not coerced from strings. Profile names/bios are plain text, and the client should render them as text.
+Unknown fields, ownership/school IDs, arbitrary photo URLs and unsupported contact fields are rejected. JSON numbers are not coerced from strings. Profile names/bios are plain text, and the client should render them as text.
 
 Example create/replace body:
 
 ```json
 {
   "displayName": "Demo Student",
+  "phone": "703-555-0199",
   "bio": "Looking for a roommate.",
   "major": "Computer Science",
   "classYear": 2028,
@@ -95,7 +97,7 @@ Example create/replace body:
 }
 ```
 
-The response envelope contains a profile with exactly `userId`, the five fields above, `school: {id,name}`, and `photos`. Photos are sorted by position. School email, phone, auth metadata, credentials and storage object keys are excluded.
+The response envelope contains a profile with exactly `userId`, the six fields above, `school: {id,name}`, and `photos`. Photos are sorted by position. The saved `phone` is returned only by the owner-only profile API. School email, Auth-provider phone metadata, credentials and storage object keys are excluded. Do not include this private field in future discovery/profile-card responses; contact sharing still requires an authorized match.
 
 ## Photos
 
@@ -160,3 +162,13 @@ Refresh an expired session through Supabase; if refresh fails, ask the user to s
 ## Contract coordination
 
 This contract covers implemented Milestone 1 operations. Completion currently covers the profile and at least one photo. `GET /me/profile` retrieves existing values for profile editing. Coordinate future contract additions with the frontend and integration teammates before they rely on them.
+
+## Phone field setup
+
+Run `npm.cmd run migrate` before restarting the backend to apply migration 004.
+The frontend uses `phone` in PUT bodies and GET responses; no separate endpoint
+is needed. Existing profiles retain null. The frontend requires a phone on its
+form, while the API keeps it optional for older clients. PATCH without `phone`
+preserves it; PATCH with `phone: null` clears it. PUT without it resets it to null.
+Phone values are stored as trimmed text with their formatting preserved. This
+does not verify ownership of the number or add SMS authentication.

@@ -259,7 +259,7 @@ components:
                   requestId: {type: string, format: uuid}
                   details: {type: object, additionalProperties: true}
     Profile:
-      description: Own profile without email, phone, auth metadata or storage object keys
+      description: Own profile including private owner phone, without email, auth metadata or storage object keys
       content:
         application/json:
           schema:
@@ -384,6 +384,11 @@ components:
       required: [displayName]
       properties: &profileFields
         displayName: {type: string, minLength: 1, maxLength: 80, description: Trimmed; cannot be whitespace-only}
+        phone:
+          type: string
+          nullable: true
+          maxLength: 25
+          description: Owner-only phone contact; 10-15 digits with optional formatting (spaces, parentheses, hyphens, periods, leading +). Trimmed; not SMS-verified. PUT omission resets to null; PATCH omission preserves.
         bio: {type: string, maxLength: 500}
         major: {type: string, minLength: 1, maxLength: 100, nullable: true}
         classYear: {type: integer, minimum: 2000, maximum: 2100, nullable: true}
@@ -401,9 +406,10 @@ components:
     Profile:
       type: object
       additionalProperties: false
-      required: [userId, displayName, bio, major, classYear, interests, school, photos]
+      required: [userId, displayName, phone, bio, major, classYear, interests, school, photos]
       properties:
         displayName: {type: string, minLength: 1, maxLength: 80}
+        phone: {type: string, nullable: true, maxLength: 25, description: Private phone number belonging to the signed-in profile owner}
         bio: {type: string, maxLength: 500}
         major: {type: string, nullable: true}
         classYear: {type: integer, nullable: true}
