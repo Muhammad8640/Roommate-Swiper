@@ -1,0 +1,364 @@
+/* Roommate profile card */
+.rc-card {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  overflow: hidden;
+  color: #242033;
+  text-align: left;
+  background: #fff;
+  border: 1px solid #ece9f2;
+  border-radius: 24px;
+  box-shadow: 0 18px 50px rgba(38, 24, 59, 0.12);
+}
+
+.rc-gallery {
+  position: relative;
+  height: 390px;
+  overflow: hidden;
+  isolation: isolate;
+  background: #eee8f6;
+}
+
+.rc-gallery-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.rc-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #7140a5;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,.9), transparent 36%),
+    linear-gradient(145deg, #f4eaff, #e7d8f5 55%, #d9c4ec);
+}
+
+.rc-photo-placeholder span {
+  display: grid;
+  width: 112px;
+  height: 112px;
+  place-items: center;
+  border: 4px solid rgba(255,255,255,.8);
+  border-radius: 50%;
+  background: rgba(255,255,255,.6);
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.rc-photo-placeholder small {
+  color: #765b8d;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.rc-gallery-shade {
+  position: absolute;
+  z-index: 1;
+  inset: 35% 0 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 10, 24, .78) 100%);
+}
+
+.rc-photo-progress {
+  position: absolute;
+  z-index: 3;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  gap: 5px;
+}
+
+.rc-photo-progress span {
+  flex: 1;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(255,255,255,.48);
+}
+
+.rc-photo-progress span.is-active {
+  background: #fff;
+}
+
+.rc-photo-arrow {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  place-items: center;
+  transform: translateY(-50%);
+  color: #292333;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,.9);
+  cursor: pointer;
+  transition: background .18s ease, transform .18s ease;
+}
+
+.rc-photo-arrow:hover {
+  background: #fff;
+  transform: translateY(-50%) scale(1.06);
+}
+
+.rc-photo-prev { left: 12px; }
+.rc-photo-next { right: 12px; }
+
+.rc-identity {
+  position: absolute;
+  z-index: 2;
+  right: 20px;
+  bottom: 20px;
+  left: 20px;
+  color: #fff;
+}
+
+.rc-name-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rc-identity h3 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(25px, 6vw, 32px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -.7px;
+  overflow-wrap: anywhere;
+}
+
+.rc-profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 9px;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.38);
+  border-radius: 99px;
+  background: rgba(255,255,255,.17);
+  backdrop-filter: blur(8px);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rc-year {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 9px;
+  color: rgba(255,255,255,.94);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rc-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 22px;
+}
+
+.rc-details,
+.rc-interests-section,
+.rc-lifestyle-section {
+  min-width: 0;
+}
+
+.rc-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+
+.rc-section-icon {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  flex: 0 0 29px;
+  place-items: center;
+  color: #8b42c8;
+  border-radius: 9px;
+  background: #f4eaff;
+}
+
+.rc-section-heading h4 {
+  margin: 0;
+  color: #292333;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+
+.rc-section-count {
+  margin-left: auto;
+  color: #91899b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.rc-major {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 11px;
+  padding: 11px 13px;
+  border: 1px solid #eee8f5;
+  border-radius: 12px;
+  background: #fbf9fd;
+}
+
+.rc-detail-label {
+  color: #8a8294;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.rc-major strong {
+  color: #4c315f;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.rc-bio {
+  margin: 0;
+  color: #625b6c;
+  font-size: 13px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.rc-empty-text {
+  color: #9b94a4;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.rc-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rc-tags li {
+  padding: 7px 11px;
+  color: #7435a7;
+  border: 1px solid #eadcf7;
+  border-radius: 99px;
+  background: #f8f1ff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rc-lifestyle-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.rc-lifestyle-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid #eeeaf2;
+  border-radius: 12px;
+  background: #fcfbfd;
+}
+
+.rc-lifestyle-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  place-items: center;
+  color: #8b42c8;
+  border-radius: 9px;
+  background: #f4eaff;
+}
+
+.rc-lifestyle-item > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.rc-lifestyle-item small {
+  color: #8b8494;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.rc-lifestyle-item strong {
+  color: #403849;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+/* Decorative cards behind the active profile */
+.rc-deck {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  padding-bottom: 18px;
+}
+
+.rc-deck::before,
+.rc-deck::after {
+  position: absolute;
+  z-index: -1;
+  right: 10px;
+  bottom: 0;
+  left: 10px;
+  height: 28px;
+  content: "";
+  border: 1px solid #e9e3ef;
+  border-radius: 0 0 20px 20px;
+  background: #f8f5fb;
+}
+
+.rc-deck::before {
+  right: 20px;
+  left: 20px;
+  bottom: 7px;
+  opacity: .7;
+}
+
+@media (max-width: 480px) {
+  .rc-gallery { height: 340px; }
+  .rc-content { padding: 18px; gap: 17px; }
+  .rc-lifestyle-grid { grid-template-columns: 1fr; }
+  .rc-profile-badge { font-size: 9px; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

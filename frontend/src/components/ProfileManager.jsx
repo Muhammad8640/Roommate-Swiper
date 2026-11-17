@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   User,
+  Phone,
   BookOpen,
   GraduationCap,
   FileText,
@@ -18,6 +19,7 @@ const API_BASE =
 export default function ProfileManager({ token, onProfileSaved }) {
   const [formData, setFormData] = useState({
     displayName: '',
+    phone: '',
     bio: '',
     major: '',
     classYear: new Date().getFullYear(),
@@ -53,6 +55,7 @@ export default function ProfileManager({ token, onProfileSaved }) {
         if (json.data) {
           setFormData({
             displayName: json.data.displayName || '',
+            phone: json.data.phone || json.data.phoneNumber || '',
             bio: json.data.bio || '',
             major: json.data.major || '',
             classYear: json.data.classYear || new Date().getFullYear(),
@@ -161,6 +164,7 @@ export default function ProfileManager({ token, onProfileSaved }) {
         },
         body: JSON.stringify({
           displayName: formData.displayName,
+          phone: formData.phone ? formData.phone.trim() : null,
           bio: formData.bio || '',
           major: formData.major ? formData.major.trim() : null,
           classYear: formData.classYear ? Number(formData.classYear) : null,
@@ -205,7 +209,8 @@ export default function ProfileManager({ token, onProfileSaved }) {
         left: 0,
         width: '100vw',
         height: '100vh',
-        background: 'var(--bg)',
+        backgroundColor: '#121212',
+        background: 'var(--bg, #121212)',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -223,7 +228,8 @@ export default function ProfileManager({ token, onProfileSaved }) {
       left: 0,
       width: '100vw',
       height: '100vh',
-      background: 'var(--bg)',
+      backgroundColor: '#121212',
+      background: 'var(--bg, #121212)',
       overflowY: 'auto',
       display: 'flex',
       justifyContent: 'center',
@@ -235,7 +241,8 @@ export default function ProfileManager({ token, onProfileSaved }) {
       <div style={{
         maxWidth: '600px',
         width: '100%',
-        background: 'var(--bg)',
+        backgroundColor: '#18181b',
+        background: 'var(--bg, #18181b)',
         boxShadow: 'var(--shadow)',
         borderRadius: '16px',
         padding: '32px',
@@ -245,8 +252,8 @@ export default function ProfileManager({ token, onProfileSaved }) {
         boxSizing: 'border-box'
       }}>
         <div style={{ marginBottom: '24px' }}>
-          <h2>Your Roommate Profile</h2>
-          <p style={{ color: 'var(--text)', fontSize: '15px', marginTop: '4px' }}>
+          <h2 style={{ color: 'var(--text-h, #fff)', margin: 0 }}>Your Roommate Profile</h2>
+          <p style={{ color: 'var(--text, #a1a1aa)', fontSize: '15px', marginTop: '4px' }}>
             Set up how potential roommates will see you on the platform.
           </p>
         </div>
@@ -377,6 +384,39 @@ export default function ProfileManager({ token, onProfileSaved }) {
             {fieldErrors.displayName && (
               <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>
                 {fieldErrors.displayName}
+              </p>
+            )}
+          </div>
+
+          {/* Phone Number */}
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
+              <Phone style={{ width: '16px', height: '16px', color: 'var(--accent)' }} /> Phone Number{' '}
+              <span style={{ color: '#ef4444' }}>*</span>
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              maxLength={25}
+              required
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="703-555-0199"
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                background: 'var(--code-bg)',
+                color: 'var(--text-h)',
+                fontSize: '15px',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+            />
+            {fieldErrors.phone && (
+              <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>
+                {fieldErrors.phone}
               </p>
             )}
           </div>
