@@ -204,7 +204,7 @@ export default function App() {
           )}
 
           {currentView === "swipe" && (
-            <SwipeDeck token={session.access_token} />
+            <SwipeDeck token={session.access_token} onViewMatches={() => setCurrentView("matches")} />
           )}
         </main>
       </div>

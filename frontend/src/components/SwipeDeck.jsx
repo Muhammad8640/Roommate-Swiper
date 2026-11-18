@@ -10,14 +10,16 @@ async function getJson(path, token) {
   return { ok: res.ok, status: res.status, json };
 }
 
-export default function SwipeDeck({ token }) {
+export default function SwipeDeck({ token, onViewMatches }) {
   const [candidates, setCandidates] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [swiping, setSwiping] = useState(false);
+  const [newMatch, setNewMatch] = useState(null);
 
   useEffect(() => {
+    setNewMatch(null);
     let cancelled = false;
 
     async function loadFeed() {
@@ -72,7 +74,7 @@ export default function SwipeDeck({ token }) {
     setSwiping(true);
     try {
       if (targetUserId) {
-        await fetch(`${API_BASE}/swipes`, {
+        const response = await fetch(`${API_BASE}/swipes`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -83,6 +85,12 @@ export default function SwipeDeck({ token }) {
             action: action, // 'like' or 'pass'
           }),
         });
+        const result = await response.json();
+        if (response.ok && result.data?.matched) {
+          setNewMatch({
+            displayName: result.data.match?.displayName || currentCandidate.profile.display_name,
+          });
+        }
       }
     } catch (err) {
       console.error("Failed to record swipe action", err);
@@ -101,6 +109,27 @@ export default function SwipeDeck({ token }) {
         <h2 style={{ margin: 0, fontSize: "28px", fontWeight: 800, letterSpacing: "-0.6px" }}>Find your next roommate</h2>
         <p style={{ color: "#777080", fontSize: "14px", marginTop: "7px" }}>Get to know students and see if your lifestyles match.</p>
       </div>
+
+      {newMatch && (
+        <section role="status" aria-live="polite" style={{
+          padding: "20px", marginBottom: "20px", textAlign: "center",
+          border: "2px solid var(--accent, #8b42c8)", borderRadius: "16px",
+          background: "var(--card-bg, #ffffff)",
+        }}>
+          <Heart size={28} color="var(--accent, #8b42c8)" style={{ margin: "0 auto" }} />
+          <h3 style={{ margin: "8px 0" }}>You matched!</h3>
+          <p>You and {newMatch.displayName || "another student"} liked each other.</p>
+          <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
+            <button type="button" onClick={() => setNewMatch(null)}>Dismiss</button>
+            {onViewMatches && (
+              <button type="button" onClick={() => {
+                setNewMatch(null);
+                onViewMatches();
+              }}>View Matches</button>
+            )}
+          </div>
+        </section>
+      )}
 
       {loading && (
         <div style={{ display: "flex", justifyContent: "center", padding: "48px 0" }}>
