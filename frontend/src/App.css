@@ -5,9 +5,10 @@
 
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f6fb;
-  color: #202438;
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .auth-page {
@@ -67,4 +68,93 @@ body {
 .auth-card button:disabled {
   opacity: 0.6;
   cursor: wait;
+}
+
+
+/* Authentication page */
+.auth-page {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.auth-card {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.auth-card h1,
+.auth-card h2 {
+  color: var(--text-h);
+}
+
+.auth-card p {
+  color: var(--text);
+}
+
+/* Form labels */
+.auth-card label {
+  display: block;
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+/* Input fields */
+.auth-card input,
+input,
+textarea,
+select {
+  background: var(--input-bg);
+  color: var(--text-h);
+  border: 1px solid var(--border);
+}
+
+/* Placeholder text */
+input::placeholder,
+textarea::placeholder {
+  color: var(--placeholder);
+  opacity: 1;
+}
+
+/* Input focus */
+.auth-card input:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-color: var(--accent);
+}
+
+/* Disabled inputs */
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Buttons */
+button {
+  font-family: var(--sans);
+}
+
+/* Links */
+a {
+  color: var(--accent);
+}
+
+a:hover {
+  opacity: 0.85;
+}
+
+/* Smooth theme transitions */
+.auth-card,
+.auth-card input,
+button {
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }

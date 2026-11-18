@@ -213,7 +213,7 @@ export default function App() {
 
   return (
     <main className="auth-page" style={{ background: 'var(--bg)', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '20px' }}>
-      <section className="auth-card" style={{ maxWidth: '400px', width: '100%', padding: '32px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '16px', boxShadow: 'var(--shadow)' }}>
+      <section className="auth-card" style={{ maxWidth: '400px', width: '100%', padding: '32px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', boxShadow: 'var(--shadow)' }}>
         <h1 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--accent)', marginBottom: '8px' }}>Roommate Swiper</h1>
         <p style={{ color: 'var(--text)', fontSize: '14px', marginBottom: '24px' }}>Find your next roommate using your @gmu.edu school email.</p>
 
@@ -227,7 +227,7 @@ export default function App() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
-              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--code-bg)', color: 'var(--text-h)', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg)', color: 'var(--text-h)', boxSizing: 'border-box' }}
             />
           </div>
 
@@ -241,7 +241,7 @@ export default function App() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
-              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--code-bg)', color: 'var(--text-h)', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--input-bg)', color: 'var(--text-h)', boxSizing: 'border-box' }}
             />
           </div>
 
