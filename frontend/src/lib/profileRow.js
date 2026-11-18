@@ -19,6 +19,8 @@ export function toProfileRow(api = {}) {
     major: api.major ?? null,
     class_year: api.class_year ?? api.classYear ?? null,
     interests: api.interests ?? [],
+    compatibility_score:
+      api.compatibility_score ?? api.compatibilityScore ?? null,
     photos: [...(api.photos ?? [])]
       .map((photo) => ({
         id: photo.id,

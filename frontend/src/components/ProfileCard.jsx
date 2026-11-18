@@ -34,6 +34,8 @@ function initials(name = "") {
 }
 
 export default function ProfileCard({ profile = {}, preferences }) {
+  const compatibilityScore =
+    profile.compatibility_score ?? profile.compatibilityScore;
   const {
     display_name = "Roommate profile",
     bio = "",
