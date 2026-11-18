@@ -25,3 +25,12 @@ export function matchScore(a, b) {
   const matches = QUESTION_IDS.filter((id) => a.answers[id] === b.answers[id]).length;
   return SCORE_TABLE[matches];
 }
+
+export function rankCandidates(me, candidates, limit) {
+  return candidates
+    .map((candidate) => ({ ...candidate, score: matchScore(me, fromRow(candidate)) }))
+    .filter((candidate) => candidate.score > 0)
+    .sort((a, b) => b.score - a.score || a.userId.localeCompare(b.userId))
+    .slice(0, limit)
+    .sort((a, b) => a.score - b.score || a.userId.localeCompare(b.userId));
+}

@@ -45,3 +45,17 @@ export function photoStore(config) {
     }
   };
 }
+
+export function accountDirectory(config) {
+  const admin = supabase(config.SUPABASE_URL, config.SUPABASE_SECRET_KEY).auth.admin;
+  const unavailable = () => new HttpError(503, 'AUTH_UNAVAILABLE', 'Contact details are temporarily unavailable.');
+  return {
+    async emailFor(id) {
+      let result;
+      try { result = await admin.getUserById(id); }
+      catch { throw unavailable(); }
+      if (result.error || !result.data?.user?.email) throw unavailable();
+      return result.data.user.email;
+    }
+  };
+}
