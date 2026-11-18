@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { matchScore, fromRow } from '../src/scoring.js';
+import { matchScore, fromRow, rankCandidates } from '../src/scoring.js';
 
 const prefs = (scenarioAnswers, nonNegotiables = {}) => fromRow({ scenarioAnswers, nonNegotiables });
 const base = { cleanliness: 0, sleep: 1, noise: 1, guests: 0, smoking: 0, sharing: 1 };
@@ -35,4 +35,24 @@ test('a forbidden answer nobody gave does not block a match', () => {
 test('missing answers throw', () => {
   const { sharing, ...incomplete } = base;
   assert.throws(() => matchScore(prefs(incomplete), prefs(base)), /missing an answer/);
+});
+
+const ids = Object.keys(base);
+const candidate = (userId, shared, nonNegotiables = {}) => ({
+  userId,
+  scenarioAnswers: Object.fromEntries(ids.map((id, i) => [id, i < shared ? base[id] : (base[id] + 1) % 4])),
+  nonNegotiables
+});
+
+test('ranking keeps the best matches and lists them lowest score first', () => {
+  const people = [candidate('a', 6), candidate('b', 0), candidate('c', 3), candidate('d', 2), candidate('e', 5)];
+  const ranked = rankCandidates(prefs(base), people, 3);
+  assert.deepEqual(ranked.map(p => p.userId), ['c', 'e', 'a']);
+  assert.deepEqual(ranked.map(p => p.score), [70, 90, 100]);
+});
+
+test('ranking leaves out students ruled out by a non-negotiable', () => {
+  const blocked = candidate('x', 6, { smoking: [base.smoking] });
+  const ranked = rankCandidates(prefs(base), [blocked, candidate('y', 1)], 10);
+  assert.deepEqual(ranked.map(p => p.userId), ['y']);
 });

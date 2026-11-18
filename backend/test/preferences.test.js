@@ -167,7 +167,7 @@ it('converts legacy accepted-answer restrictions without changing existing profi
     assert.equal(await migrate(pool), true);
     assert.equal(await migrate(pool), false);
     assert.equal((await db.query('SELECT display_name FROM roommate.profiles')).rows[0].display_name, 'Keep this profile');
-    assert.equal((await db.query('SELECT count(*)::int AS count FROM roommate.migrations')).rows[0].count, 3);
+    assert.equal((await db.query('SELECT count(*)::int AS count FROM roommate.migrations')).rows[0].count, 5);
     const saved = (await db.query('SELECT scenario_answers, non_negotiables FROM roommate.preferences')).rows[0];
     assert.deepEqual(saved.scenario_answers, payload().scenarioAnswers);
     assert.deepEqual(saved.non_negotiables, { smoking: [1, 2, 3], noise: [3] });

@@ -11,7 +11,7 @@ describe('Current-feature database', () => {
   after(async () => { await database?.db.close(); });
   it('contains only accounts, profiles, preferences and migration tracking', async () => {
     const result = await database.db.query("SELECT tablename FROM pg_tables WHERE schemaname = 'roommate' ORDER BY tablename");
-    assert.deepEqual(result.rows.map(row => row.tablename), ['accounts', 'migrations', 'photos', 'preferences', 'profiles', 'school_domains', 'schools']);
+    assert.deepEqual(result.rows.map(row => row.tablename), ['accounts', 'migrations', 'photos', 'preferences', 'profiles', 'school_domains', 'schools', 'swipes']);
   });
   it('is repeatable and refuses a modified applied migration without losing data', async () => {
     assert.equal(await migrate(database.pool), false);

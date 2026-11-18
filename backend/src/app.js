@@ -14,8 +14,10 @@ import { preferencesService } from './services/preferences.js';
 import { discoveryRepository } from './repositories/discovery.js';
 import { discoveryService } from './services/discovery.js';
 import { compatibilityService } from './services/compatibility.js';
+import { swipesRepository } from './repositories/swipes.js';
+import { swipesService } from './services/swipes.js';
 
-export function createApp({ pool, auth, storage, origins = [], requestLimit = 120, logger = console }) {
+export function createApp({ pool, auth, storage, directory, origins = [], requestLimit = 120, logger = console }) {
   const app = express();
   app.disable('x-powered-by');
   app.use((request, response, next) => {
@@ -39,9 +41,11 @@ export function createApp({ pool, auth, storage, origins = [], requestLimit = 12
   const accounts = accountsRepository(pool);
   const profiles = profilesRepository(pool);
   const preferenceRepo = preferencesRepository();
+  const discoveryRepo = discoveryRepository(pool);
   app.use('/api/v1', routes(identityService(auth, accounts), accounts,
     profilesService(profiles, storage, logger), preferencesService(preferenceRepo, profiles),
-    compatibilityService(preferenceRepo, pool), discoveryService(discoveryRepository(pool), storage)));
+    compatibilityService(preferenceRepo, pool), discoveryService(discoveryRepo, storage),
+    swipesService(swipesRepository(pool), discoveryRepo, directory)));
   app.use((request, response, next) => next(new HttpError(404, 'NOT_FOUND', 'The requested resource was not found.')));
   app.use(handleErrors(logger));
   return app;
