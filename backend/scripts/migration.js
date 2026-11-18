@@ -12,11 +12,13 @@ export async function migrate(pool) {
     await client.query('CREATE TABLE IF NOT EXISTS roommate.migrations (name text PRIMARY KEY, checksum text NOT NULL, applied_at timestamptz NOT NULL DEFAULT now())');
     let applied = false;
     for (const name of files) {
-      const source = await readFile(new URL(name, directory), 'utf8');
+      const source = (await readFile(new URL(name, directory), 'utf8')).replace(/\r\n/g, '\n');
       const checksum = createHash('sha256').update(source).digest('hex');
       const existing = await client.query('SELECT checksum FROM roommate.migrations WHERE name = $1', [name]);
       if (existing.rows.length) {
-        if (existing.rows[0].checksum !== checksum) throw new Error('The applied migration has changed; add a new migration instead');
+        // Accept legacy Windows checksums too; SQL edits still fail this check.
+        const windowsChecksum = createHash('sha256').update(source.replace(/\n/g, '\r\n')).digest('hex');
+        if (![checksum, windowsChecksum].includes(existing.rows[0].checksum)) throw new Error('The applied migration has changed; add a new migration instead');
         continue;
       }
       await client.query(source);

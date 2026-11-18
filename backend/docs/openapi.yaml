@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Roommate Swiper - Accounts, Profiles and Preferences
-  version: 0.3.0
+  version: 0.4.0
   description: |
     Milestone 1 and the preferences/API portion of Milestone 2. Registration, confirmation, login, logout,
     recovery and session refresh use Supabase Auth directly. Application data and
@@ -16,6 +16,33 @@ servers:
 security:
   - bearerAuth: []
 paths:
+  /profiles:
+    get:
+      operationId: listCandidateProfiles
+      summary: Step 1 roommate feed with private contact fields excluded
+      description: Requires a saved profile, at least one photo and questionnaire answers. Returns active completed profiles in the caller's school, excluding self. Ordered by user ID. Scores, non-negotiable filtering and swipe exclusion arrive in later checkpoints.
+      parameters:
+        - in: query
+          name: limit
+          schema: {type: integer, minimum: 1, maximum: 20, default: 10}
+        - in: query
+          name: offset
+          schema: {type: integer, minimum: 0, maximum: 10000, default: 0}
+      responses:
+        '200':
+          description: Candidate profiles; an empty array means no candidates on this page
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: {$ref: '#/components/schemas/CandidateProfile'}
+        '409':
+          description: SETUP_REQUIRED; error.details.missingFields lists profile, photo and/or preferences
+        default: {$ref: '#/components/responses/Error'}
   /questionnaire:
     get:
       operationId: getQuestionnaire
@@ -268,6 +295,25 @@ components:
             properties:
               data: {$ref: '#/components/schemas/Profile'}
   schemas:
+    CandidateProfile:
+      type: object
+      additionalProperties: false
+      required: [userId, displayName, bio, major, classYear, interests, school, questionnaireVersion, scenarioAnswers, photos]
+      properties:
+        userId: {type: string, format: uuid}
+        displayName: {type: string}
+        bio: {type: string}
+        major: {type: string, nullable: true}
+        classYear: {type: integer, nullable: true}
+        interests: {type: array, items: {type: string}}
+        school: {$ref: '#/components/schemas/School'}
+        questionnaireVersion: {type: integer, enum: [1]}
+        scenarioAnswers: {$ref: '#/components/schemas/Answers'}
+        photos:
+          type: array
+          minItems: 1
+          maxItems: 3
+          items: {$ref: '#/components/schemas/Photo'}
     Questionnaire:
       type: object
       required: [version, questions, nonNegotiableChoices]

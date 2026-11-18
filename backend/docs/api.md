@@ -172,3 +172,11 @@ form, while the API keeps it optional for older clients. PATCH without `phone`
 preserves it; PATCH with `phone: null` clears it. PUT without it resets it to null.
 Phone values are stored as trimmed text with their formatting preserved. This
 does not verify ownership of the number or add SMS authentication.
+
+## Discovery feed: Milestone 3, Step 1
+
+`GET /api/v1/profiles` returns completed candidate profiles without private
+contacts. Optional queries: `limit` (1-20, default 10) and `offset` (0-10000,
+default 0). A complete profile/photo/questionnaire setup is required. See
+[discovery.md](discovery.md) for fields, prerequisites and the four checkpoints.
+Scoring and swipe filtering are added in subsequent checkpoints.
