@@ -109,12 +109,24 @@ export default function SwipeDeck({ token }) {
       )}
 
       {error && !currentCard && (
-        <p role="alert" style={{ textAlign: "center", fontSize: "14px", color: "#ef4444" }}>
+        <div
+          role="alert"
+          style={{
+            background: "var(--card-bg, #ffffff)",
+            border: "1px solid #fecaca",
+            borderRadius: "16px",
+            padding: "32px 24px",
+            textAlign: "center",
+            color: "#ef4444",
+            fontSize: "14px",
+            fontWeight: 500,
+          }}
+        >
           {error}
-        </p>
+        </div>
       )}
 
-      {!loading && (!currentCard || currentIndex >= candidates.length) && (
+      {!loading && !error && (!currentCard || currentIndex >= candidates.length) && (
         <div style={{
           background: 'var(--card-bg, #ffffff)',
           border: '1px solid var(--border, #e2e8f0)',
