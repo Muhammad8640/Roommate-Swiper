@@ -61,6 +61,38 @@
   font-weight: 600;
 }
 
+.rc-compatibility-circle {
+  position: absolute;
+  z-index: 3;
+  top: 28px;
+  right: 16px;
+  width: 76px;
+  height: 76px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid rgba(255, 255, 255, .95);
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(145deg, #a855f7, #7e22ce);
+  box-shadow: 0 4px 16px rgba(45, 15, 70, .3);
+  line-height: 1.1;
+}
+
+.rc-compatibility-circle strong {
+  font-size: 20px;
+  font-weight: 850;
+}
+
+.rc-compatibility-circle span {
+  margin-top: 3px;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
 .rc-gallery-shade {
   position: absolute;
   z-index: 1;

@@ -82,6 +82,13 @@ export default function ProfileCard({ profile = {}, preferences }) {
 
         <div className="rc-gallery-shade" />
 
+        {Number.isFinite(Number(compatibilityScore)) && compatibilityScore !== null && compatibilityScore !== undefined && (
+          <div className="rc-compatibility-circle" aria-label={`${compatibilityScore}% compatibility`}>
+            <strong>{compatibilityScore}%</strong>
+            <span>match</span>
+          </div>
+        )}
+
         {sortedPhotos.length > 1 && (
           <>
             <div className="rc-photo-progress" aria-label={`Photo ${photoIndex + 1} of ${sortedPhotos.length}`}>
