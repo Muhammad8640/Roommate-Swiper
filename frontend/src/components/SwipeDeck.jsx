@@ -60,6 +60,58 @@ export default function SwipeDeck({ token }) {
     };
   }, [token]);
 
+<<<<<<< Updated upstream
+=======
+  
+const handleSwipe = async (action) => {
+  if (swiping || candidates.length === 0) return;
+
+  const currentCandidate = candidates[currentIndex];
+  const targetUserId = currentCandidate?.userId;
+
+  if (!targetUserId) return;
+
+  setSwiping(true);
+  setError("");
+
+  try {
+    const response = await fetch(`${API_BASE}/swipes`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        targetId: targetUserId,
+        direction: action === "like" ? "right" : "left",
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.error?.message || "Could not save your swipe."
+      );
+    }
+
+    // The backend tells us when both users have liked each other.
+    if (result.data?.matched) {
+      console.log("You matched with:", result.data.match);
+    }
+
+    setCurrentIndex((prev) => prev + 1);
+  } catch (err) {
+    console.error("Failed to record swipe:", err);
+    setError(err.message || "Could not save your swipe.");
+  } finally {
+    setSwiping(false);
+  }
+};
+
+  const currentCard = candidates[currentIndex];
+
+>>>>>>> Stashed changes
   return (
     <div style={{ width: "100%", maxWidth: "500px", margin: "0 auto", padding: "32px 18px", boxSizing: "border-box" }}>
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -75,7 +127,23 @@ export default function SwipeDeck({ token }) {
       )}
 
       {error && (
+<<<<<<< Updated upstream
         <p role="alert" style={{ textAlign: "center", fontSize: "14px", color: "#ef4444" }}>
+=======
+        <div
+          role="alert"
+          style={{
+            background: "var(--card-bg, #ffffff)",
+            border: "1px solid #fecaca",
+            borderRadius: "16px",
+            padding: "32px 24px",
+            textAlign: "center",
+            color: "#ef4444",
+            fontSize: "14px",
+            fontWeight: 500,
+          }}
+        >
+>>>>>>> Stashed changes
           {error}
         </p>
       )}
