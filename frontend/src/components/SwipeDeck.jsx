@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Heart, Loader2, RotateCcw, X } from "lucide-react";
+import { Heart, Loader2, RotateCcw, X, Flag } from "lucide-react";
 import ProfileCard from "./ProfileCard";
 import { toPreferencesRow, toProfileRow } from "../lib/profileRow";
 
@@ -20,39 +20,70 @@ async function requestJson(path, token, options = {}) {
 
 export default function SwipeDeck({ token }) {
   const [profiles, setProfiles] = useState([]);
+  const [reportTarget, setReportTarget] = useState(null);
+  const [reportText, setReportText] = useState("");
+
+  const [reportedProfileIds, setReportedProfileIds] = useState(() => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("roommate-swiper-reported-profiles") || "[]"
+      );
+    } catch {
+      return [];
+    }
+  });
   const [loading, setLoading] = useState(true);
   const [swiping, setSwiping] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-
+  useEffect(() => {
+  localStorage.setItem(
+    "roommate-swiper-reported-profiles",
+    JSON.stringify(reportedProfileIds)
+  );
+}, [reportedProfileIds]);
   const loadProfiles = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    setNotice("");
-    try {
-      const result = await requestJson("/discover?limit=10", token);
-      if (!result.ok) {
-        const missing = result.json.error?.details?.missingFields;
-        if (result.status === 409 && missing) {
-          setError(`Finish your ${missing.join(", ")} before browsing profiles.`);
-        } else {
-          setError(result.json.error?.message || "Could not load other profiles.");
-        }
-        setProfiles([]);
-        return;
+  setLoading(true);
+  setError("");
+  setNotice("");
+
+  try {
+    const result = await requestJson("/discover?limit=10", token);
+
+    if (!result.ok) {
+      const missing = result.json.error?.details?.missingFields;
+
+      if (result.status === 409 && missing) {
+        setError(`Finish your ${missing.join(", ")} before browsing profiles.`);
+      } else {
+        setError(result.json.error?.message || "Could not load other profiles.");
       }
 
-      setProfiles((result.json.data ?? []).map((item) => ({
-        profile: toProfileRow({ ...item, compatibility_score: item.score }),
-        preferences: toPreferencesRow(item),
-      })));
-    } catch {
-      setError("Could not reach the server. Make sure the backend is running.");
       setProfiles([]);
-    } finally {
-      setLoading(false);
+      return;
     }
-  }, [token]);
+
+    setProfiles(
+      (result.json.data ?? [])
+        .map((item) => ({
+          profile: toProfileRow({
+            ...item,
+            compatibility_score: item.score,
+          }),
+          preferences: toPreferencesRow(item),
+        }))
+        .filter(
+          (item) =>
+            !reportedProfileIds.includes(item.profile.user_id)
+        )
+    );
+  } catch {
+    setError("Could not reach the server. Make sure the backend is running.");
+    setProfiles([]);
+  } finally {
+    setLoading(false);
+  }
+}, [token, reportedProfileIds]);
 
   useEffect(() => {
     if (token) loadProfiles();
@@ -64,6 +95,40 @@ export default function SwipeDeck({ token }) {
 
   async function handleSwipe(direction) {
     const current = profiles[0];
+    function submitReport(event) {
+  event.preventDefault();
+
+  if (!reportTarget || !reportText.trim()) return;
+
+  const profileName = reportTarget.display_name || "Unknown profile";
+  const profileId = reportTarget.user_id;
+
+  const subject = `Roommate Swiper report: ${profileName}`;
+
+  const body = [
+    `Profile: ${profileName}`,
+    `Profile ID: ${profileId}`,
+    "",
+    "Report details:",
+    reportText.trim(),
+  ].join("\n");
+
+  window.location.href =
+    `mailto:mraza22@gmu.edu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+  setReportedProfileIds((ids) => [...new Set([...ids, profileId])]);
+
+  setProfiles((items) =>
+    items.filter((item) => item.profile.user_id !== profileId)
+  );
+
+  setReportTarget(null);
+  setReportText("");
+
+  setNotice(
+    "This profile has been removed. Your email draft is ready. Please send it from your email app."
+  );
+}
     if (!current || swiping) return;
 
     setSwiping(true);
@@ -120,6 +185,7 @@ export default function SwipeDeck({ token }) {
               key={current.profile.user_id}
               profile={current.profile}
               preferences={current.preferences}
+              onReport={setReportTarget}
             />
           </div>
           <div className="swipe-actions" style={{ display: "flex", justifyContent: "center", gap: "24px", marginTop: "20px" }}>
@@ -141,6 +207,65 @@ export default function SwipeDeck({ token }) {
           <button type="button" onClick={loadProfiles} style={{ display: "inline-flex", alignItems: "center", gap: "8px", border: 0, borderRadius: "10px", padding: "10px 16px", color: "#fff", background: "var(--accent)", cursor: "pointer" }}>
             <RotateCcw size={16} /> Refresh profiles
           </button>
+        </div>
+      )}
+          {reportTarget && (
+        <div className="rc-report-backdrop">
+          <form
+            className="rc-report-dialog"
+            onSubmit={submitReport}
+          >
+            <div className="rc-report-heading">
+              <Flag size={18} />
+              <div>
+                <h3>Report profile</h3>
+                <p>
+                  Tell us why you're reporting{" "}
+                  {reportTarget.display_name || "this profile"}.
+                </p>
+              </div>
+            </div>
+
+            <label htmlFor="rc-report-details">
+              Report details
+            </label>
+
+            <textarea
+              id="rc-report-details"
+              value={reportText}
+              onChange={(event) => setReportText(event.target.value)}
+              placeholder="Describe the issue..."
+              rows={5}
+              maxLength={3000}
+              required
+            />
+
+            <div className="rc-report-actions">
+              <button
+                type="button"
+                className="rc-report-cancel"
+                onClick={() => {
+                  setReportTarget(null);
+                  setReportText("");
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className="rc-report-submit"
+                disabled={!reportText.trim()}
+              >
+                <Flag size={15} /> Continue to email
+              </button>
+            </div>
+
+            <p className="rc-report-note">
+              Your email app will open with the report addressed to
+              mraza22@gmu.edu. You must press Send to submit it.
+            </p>
+          </form>
         </div>
       )}
     </div>
