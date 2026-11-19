@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Heart,
+  Flag,
 } from "lucide-react";
 import "./ProfileCard.css";
 
@@ -33,7 +34,7 @@ function initials(name = "") {
     .join("");
 }
 
-export default function ProfileCard({ profile = {}, preferences }) {
+export default function ProfileCard({ profile = {}, preferences, onReport }) {
   const compatibilityScore =
     profile.compatibility_score ?? profile.compatibilityScore;
   const {
@@ -82,12 +83,16 @@ export default function ProfileCard({ profile = {}, preferences }) {
 
         <div className="rc-gallery-shade" />
 
-        {Number.isFinite(Number(compatibilityScore)) && compatibilityScore !== null && compatibilityScore !== undefined && (
-          <div className="rc-compatibility-circle" aria-label={`${compatibilityScore}% compatibility`}>
-            <strong>{compatibilityScore}%</strong>
-            <span>match</span>
-          </div>
-        )}
+        {Number.isFinite(Number(compatibilityScore)) &&
+          compatibilityScore !== null &&
+          compatibilityScore !== undefined && (
+            <div
+              className="rc-compatibility-score"
+              aria-label={`${compatibilityScore}% compatibility`}
+            >
+              {Math.round(Number(compatibilityScore))}%
+            </div>
+          )}
 
         {sortedPhotos.length > 1 && (
           <>
@@ -188,6 +193,36 @@ export default function ProfileCard({ profile = {}, preferences }) {
           </section>
         )}
       </div>
+        <div
+  className="rc-card-footer"
+  style={{
+    display: "flex",
+    justifyContent: "flex-end",
+    padding: "12px 18px",
+    borderTop: "1px solid #eee8f5",
+  }}
+>
+  <button
+    type="button"
+    onClick={() => onReport?.(profile)}
+    aria-label={`Report ${display_name}`}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      padding: "8px 12px",
+      border: "1px solid #e5d8ed",
+      borderRadius: "8px",
+      background: "#fff",
+      color: "#8b42c8",
+      cursor: "pointer",
+      fontSize: "13px",
+      fontWeight: 600,
+    }}
+  >
+    <Flag size={14} /> Report
+  </button>
+</div>
     </article>
   );
 }
